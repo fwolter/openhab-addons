@@ -1,11 +1,15 @@
 Manifest-Version: 1.0
+Bundle-ActivationPolicy: lazy
 Bundle-ManifestVersion: 2
 Bundle-Name: VenstarThermostat Binding
 Bundle-SymbolicName: org.openhab.binding.venstarthermostat;singleton:=true
 Bundle-Vendor: openHAB
 Bundle-Version: 2.3.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-ClassPath: ., lib/httpclient-4.3.4.jar, lib/httpcore-4.3.3.jar, lib/commons-logging-1.2.jar
+Bundle-ClassPath: 
+ ., 
+ lib/httpclient-4.3.4.jar, 
+ lib/httpcore-4.3.3.jar
 Export-Package: org.openhab.binding.venstarthermostat,
  org.openhab.binding.venstarthermostat.handler
 Import-Package: 
@@ -17,7 +21,7 @@ Import-Package:
  org.apache.commons.lang,
  org.apache.commons.lang.math,
  org.apache.commons.net.util,
- org.apache.log4j,
+ org.eclipse.jdt.annotation;resolution:=optional,
  org.eclipse.smarthome.config.core,
  org.eclipse.smarthome.config.core.status,
  org.eclipse.smarthome.config.discovery,
@@ -29,7 +33,6 @@ Import-Package:
  org.eclipse.smarthome.core.types,
  org.openhab.binding.venstarthermostat,
  org.openhab.binding.venstarthermostat.handler,
- org.slf4j,
- org.jupnp.model.meta,
- org.jupnp.model.types
+ org.osgi.service.component,
+ org.slf4j
 Service-Component: OSGI-INF/*.xml
