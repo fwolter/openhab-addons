@@ -14,6 +14,7 @@ package org.openhab.binding.tradfri.internal.handler;
 
 import static org.openhab.binding.tradfri.internal.TradfriBindingConstants.*;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,6 +28,7 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.config.NetworkConfig;
+import org.eclipse.californium.elements.exception.ConnectorException;
 import org.eclipse.californium.scandium.DTLSConnector;
 import org.eclipse.californium.scandium.config.DtlsConnectorConfig;
 import org.eclipse.californium.scandium.dtls.InMemoryConnectionStore;
@@ -46,7 +48,6 @@ import org.openhab.binding.tradfri.internal.CoapCallback;
 import org.openhab.binding.tradfri.internal.DeviceUpdateListener;
 import org.openhab.binding.tradfri.internal.TradfriBindingConstants;
 import org.openhab.binding.tradfri.internal.TradfriCoapClient;
-import org.openhab.binding.tradfri.internal.TradfriCoapEndpoint;
 import org.openhab.binding.tradfri.internal.TradfriCoapHandler;
 import org.openhab.binding.tradfri.internal.config.TradfriGatewayConfig;
 import org.openhab.binding.tradfri.internal.model.TradfriVersion;
@@ -101,7 +102,6 @@ public class TradfriGatewayHandler extends BaseBridgeHandler implements CoapCall
                     "Host must be specified in the configuration!");
             return;
         }
-
         if (isNullOrEmpty(configuration.code)) {
             if (isNullOrEmpty(configuration.identity) || isNullOrEmpty(configuration.preSharedKey)) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
@@ -112,23 +112,31 @@ public class TradfriGatewayHandler extends BaseBridgeHandler implements CoapCall
             }
         } else {
             String currentFirmware = thing.getProperties().get(Thing.PROPERTY_FIRMWARE_VERSION);
-            if (!isNullOrEmpty(currentFirmware)
-                    && MIN_SUPPORTED_VERSION.compareTo(new TradfriVersion(currentFirmware)) > 0) {
-                // older firmware not supported
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
-                        String.format(
-                                "Gateway firmware version '%s' is too old! Minimum supported firmware version is '%s'.",
-                                currentFirmware, MIN_SUPPORTED_VERSION.toString()));
-                return;
-            }
-
-            // Running async operation to retrieve new <'identity','key'> pair
-            scheduler.execute(() -> {
-                boolean success = obtainIdentityAndPreSharedKey();
-                if (success) {
-                    establishConnection();
+            if (isNullOrEmpty(currentFirmware)
+                    || MIN_SUPPORTED_VERSION.compareTo(new TradfriVersion(currentFirmware)) > 0) {
+                // older firmware - fall back to authentication with security code
+                // in this case the Thing configuration will not be persisted
+                if (!isNullOrEmpty(currentFirmware)) {
+                    // show warning only if we already have set the firmware property
+                    logger.warn("Gateway with old firmware '{}' - please consider upgrading to the latest version.",
+                            currentFirmware);
                 }
-            });
+
+                Configuration editedConfig = editConfiguration();
+                editedConfig.put(TradfriBindingConstants.GATEWAY_CONFIG_IDENTITY, "");
+                editedConfig.put(TradfriBindingConstants.GATEWAY_CONFIG_PRE_SHARED_KEY, configuration.code);
+                updateConfiguration(editedConfig);
+
+                establishConnection();
+            } else {
+                // Running async operation to retrieve new <'identity','key'> pair
+                scheduler.execute(() -> {
+                    boolean success = obtainIdentityAndPreSharedKey();
+                    if (success) {
+                        establishConnection();
+                    }
+                });
+            }
         }
     }
 
@@ -147,10 +155,12 @@ public class TradfriGatewayHandler extends BaseBridgeHandler implements CoapCall
             return;
         }
 
-        DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(0));
+        DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder();
         builder.setPskStore(new StaticPskStore(configuration.identity, configuration.preSharedKey.getBytes()));
-        dtlsConnector = new DTLSConnector(builder.build(), new InMemoryConnectionStore(100, 60));
-        endPoint = new TradfriCoapEndpoint(dtlsConnector, NetworkConfig.getStandard());
+        dtlsConnector = new DTLSConnector(builder.build());
+
+        //endPoint = new CoapEndpoint(dtlsConnector, true,NetworkConfig.getStandard());
+        endPoint = new CoapEndpoint.Builder().setConnector(dtlsConnector).build();
         deviceClient.setEndpoint(endPoint);
         updateStatus(ThingStatus.UNKNOWN);
 
@@ -175,11 +185,13 @@ public class TradfriGatewayHandler extends BaseBridgeHandler implements CoapCall
         String authUrl = null;
         String responseText = null;
         try {
-            DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder(new InetSocketAddress(0));
+            DtlsConnectorConfig.Builder builder = new DtlsConnectorConfig.Builder();
             builder.setPskStore(new StaticPskStore("Client_identity", configuration.code.getBytes()));
 
             DTLSConnector dtlsConnector = new DTLSConnector(builder.build());
-            CoapEndpoint authEndpoint = new CoapEndpoint(dtlsConnector, NetworkConfig.getStandard());
+            CoapEndpoint.Builder authEndpointBuilder = new CoapEndpoint.Builder();
+            authEndpointBuilder.setConnector(dtlsConnector);
+            CoapEndpoint authEndpoint = authEndpointBuilder.build();
             authUrl = "coaps://" + configuration.host + ":" + configuration.port + "/15011/9063";
 
             CoapClient deviceClient = new CoapClient(new URI(authUrl));
@@ -236,7 +248,7 @@ public class TradfriGatewayHandler extends BaseBridgeHandler implements CoapCall
         } catch (URISyntaxException e) {
             logger.error("Illegal gateway URI '{}'", authUrl, e);
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR, e.getMessage());
-        } catch (JsonParseException e) {
+        } catch (JsonParseException | ConnectorException | IOException e) {
             logger.warn("Invalid response recieved from gateway '{}'", responseText, e);
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
                     String.format("Invalid response recieved from gateway '%s'", responseText));
@@ -263,7 +275,7 @@ public class TradfriGatewayHandler extends BaseBridgeHandler implements CoapCall
 
     /**
      * Does a request to the gateway to list all available devices/services.
-     * The response is received and processed by the method {@link onUpdate(JsonElement data)}.
+     * The response is received and processed by the method }.
      */
     public void startScan() {
         if (endPoint != null) {
