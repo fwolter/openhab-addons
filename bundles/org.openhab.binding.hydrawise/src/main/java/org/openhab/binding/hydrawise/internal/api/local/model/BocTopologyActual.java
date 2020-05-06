@@ -10,21 +10,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hydrawise.internal.api;
+package org.openhab.binding.hydrawise.internal.api.local.model;
+
+import java.util.List;
 
 /**
- * Thrown when the Hydrawise cloud or local API returns back a "unauthorized" response to commands
+ * The {@link BocTopologyDesired} class models the actual BocTopology
  *
  * @author Dan Cunningham - Initial contribution
  */
-@SuppressWarnings("serial")
-public class HydrawiseAuthenticationException extends Exception {
+public class BocTopologyActual {
 
-    public HydrawiseAuthenticationException() {
-        super();
-    }
+    public List<Object> bocGateways;
 
-    public HydrawiseAuthenticationException(String message) {
-        super(message);
-    }
 }

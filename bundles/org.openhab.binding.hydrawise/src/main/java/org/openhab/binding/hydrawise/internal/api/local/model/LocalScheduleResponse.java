@@ -10,21 +10,24 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hydrawise.internal.api;
+package org.openhab.binding.hydrawise.internal.api.local.model;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * Thrown when the Hydrawise cloud or local API returns back a "unauthorized" response to commands
+ * The {@link LocalScheduleResponse} class models the LocalSchedule response message
  *
  * @author Dan Cunningham - Initial contribution
  */
-@SuppressWarnings("serial")
-public class HydrawiseAuthenticationException extends Exception {
+public class LocalScheduleResponse extends Response {
 
-    public HydrawiseAuthenticationException() {
-        super();
-    }
+    public List<Running> running = new LinkedList<Running>();
 
-    public HydrawiseAuthenticationException(String message) {
-        super(message);
-    }
+    public List<Relay> relays = new LinkedList<Relay>();
+
+    public String name;
+
+    public Integer time;
+
 }

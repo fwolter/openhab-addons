@@ -10,21 +10,31 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hydrawise.internal.api;
+package org.openhab.binding.hydrawise.internal.api.local.model;
 
 /**
- * Thrown when the Hydrawise cloud or local API returns back a "unauthorized" response to commands
+ * The {@link Forecast} class models a daily weather forecast
  *
  * @author Dan Cunningham - Initial contribution
  */
-@SuppressWarnings("serial")
-public class HydrawiseAuthenticationException extends Exception {
+public class Forecast {
 
-    public HydrawiseAuthenticationException() {
-        super();
-    }
+    public String tempHi;
 
-    public HydrawiseAuthenticationException(String message) {
-        super(message);
-    }
+    public String tempLo;
+
+    public String conditions;
+
+    public String day;
+
+    public Integer pop;
+
+    public Integer humidity;
+
+    public String wind;
+
+    public String icon;
+
+    public String iconLocal;
+
 }

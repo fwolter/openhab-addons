@@ -10,21 +10,33 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hydrawise.internal.api;
+package org.openhab.binding.hydrawise.internal.api.local.model;
+
+import java.util.List;
 
 /**
- * Thrown when the Hydrawise cloud or local API returns back a "unauthorized" response to commands
+ * The {@link Sensor} class models a sensor
  *
  * @author Dan Cunningham - Initial contribution
  */
-@SuppressWarnings("serial")
-public class HydrawiseAuthenticationException extends Exception {
+public class Sensor {
 
-    public HydrawiseAuthenticationException() {
-        super();
-    }
+    public Integer input;
 
-    public HydrawiseAuthenticationException(String message) {
-        super(message);
-    }
+    public Integer type;
+
+    public Integer mode;
+
+    public Integer timer;
+
+    public Integer offtimer;
+
+    public String name;
+
+    public Integer offlevel;
+
+    public Integer active;
+
+    public List<Object> relays = null;
+
 }

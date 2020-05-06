@@ -3,14 +3,6 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
-	<channel-group-type id="cloudController">
-		<label>Controller</label>
-		<description>Hydrawise cloud controller</description>
-		<channels>
-			<channel id="lastContact" typeId="lastContactTime" />
-			<channel id="status" typeId="status" />
-		</channels>
-	</channel-group-type>
 
 	<channel-group-type id="zone">
 		<label>Zone</label>
@@ -20,10 +12,13 @@
 			<channel id="icon" typeId="icon" />
 			<channel id="time" typeId="time" />
 			<channel id="type" typeId="type" />
-			<channel id="runcustom" typeId="runcustom" />
 			<channel id="run" typeId="run" />
+			<channel id="runcustom" typeId="runcustom" />
 			<channel id="nextruntime" typeId="nextruntime" />
+			<channel id="suspend" typeId="suspend" />
+			<channel id="suspendUnitl" typeId="suspendUntil" />
 			<channel id="timeleft" typeId="timeleft" />
+			<channel id="summary" typeId="summary" />
 		</channels>
 	</channel-group-type>
 
@@ -33,6 +28,7 @@
 		<channels>
 			<channel id="runcustom" typeId="runcustom" />
 			<channel id="run" typeId="run" />
+			<channel id="suspend" typeId="suspend" />
 		</channels>
 	</channel-group-type>
 
@@ -42,8 +38,7 @@
 		<channels>
 			<channel id="name" typeId="name" />
 			<channel id="input" typeId="input" />
-			<channel id="mode" typeId="mode" />
-			<channel id="timer" typeId="timer" />
+			<channel id="delay" typeId="delay" />
 			<channel id="offtimer" typeId="offtimer" />
 			<channel id="offlevel" typeId="offlevel" />
 			<channel id="active" typeId="active" />
@@ -57,27 +52,45 @@
 			<channel id="temperaturehigh" typeId="temperaturehigh" />
 			<channel id="temperaturelow" typeId="temperaturelow" />
 			<channel id="conditions" typeId="conditions" />
-			<channel id="day" typeId="day" />
+			<channel id="time" typeId="time" />
 			<channel id="humidity" typeId="humidity" />
 			<channel id="wind" typeId="wind" />
 		</channels>
 	</channel-group-type>
+	
+	   <channel-group-type id="system">
+        <label>System</label>
+        <description>Controller system data</description>
+        <channels>
+            <channel id="name" typeId="name" />
+            <channel id="summary" typeId="summary" />
+            <channel id="online" typeId="online" />
+            <channel id="lastContactTime" typeId="lastContactTime" />
+        </channels>
+    </channel-group-type>
 
 	<!-- Controller -->
 
 	<channel-type id="lastContactTime" advanced="true">
-		<item-type>Number:Time</item-type>
+		<item-type>DateTime</item-type>
 		<label>Last Contact Time</label>
 		<description>Last contact time of a controller</description>
 		<state readOnly="true"></state>
 	</channel-type>
 
-	<channel-type id="status">
+	<channel-type id="summary">
 		<item-type>String</item-type>
-		<label>Status</label>
-		<description>Status of the controller</description>
+		<label>Status summary</label>
+		<description>Status summary</description>
 		<state readOnly="true"></state>
 	</channel-type>
+	
+	   <channel-type id="online">
+        <item-type>Switch</item-type>
+        <label>Online</label>
+        <description>Online status of the controller</description>
+        <state readOnly="true"></state>
+    </channel-type>
 
 	<!-- Zones -->
 
@@ -95,12 +108,19 @@
 		<state readOnly="true"></state>
 	</channel-type>
 
-	<channel-type id="time" advanced="true">
-		<item-type>Number</item-type>
+	<channel-type id="startTime" advanced="true">
+		<item-type>DateTime</item-type>
 		<label>Start Time</label>
-		<description>Zone start time in seconds</description>
+		<description>Next zone start time</description>
 		<state readOnly="true"></state>
 	</channel-type>
+	
+	 <channel-type id="duration" advanced="true">
+        <item-type>Number:Time</item-type>
+        <label>Duration</label>
+        <description>Next start duration</description>
+        <state readOnly="true"></state>
+    </channel-type>
 
 	<channel-type id="type" advanced="true">
 		<item-type>Number</item-type>
@@ -123,13 +143,25 @@
 	</channel-type>
 
 	<channel-type id="runcustom">
-		<item-type>Number</item-type>
+		<item-type>Number:Time</item-type>
 		<label>Run Zones With Custom Duration </label>
-		<description>Run zones now for a custom duration of time in seconds</description>
+		<description>Run zones now for a custom duration</description>
 	</channel-type>
+	
+	<channel-type id="suspend">
+        <item-type>DateTime</item-type>
+        <label>Suspend Zones </label>
+        <description>Suspends or resumes zones until this date</description>
+    </channel-type>
+    
+	<channel-type id="suspendUntil">
+        <item-type>Switch</item-type>
+        <label>Suspend Zones </label>
+        <description>Suspends zones until this date</description>
+    </channel-type>
 
 	<channel-type id="timeleft">
-		<item-type>Number</item-type>
+		<item-type>Number:Time</item-type>
 		<label>Time Left Seconds</label>
 		<description>Time left that zone will run for</description>
 		<state readOnly="true"></state>
@@ -151,22 +183,15 @@
 		<state readOnly="true"></state>
 	</channel-type>
 
-	<channel-type id="mode" advanced="true">
-		<item-type>Number</item-type>
-		<label>Mode</label>
-		<description>Sensor mode</description>
-		<state readOnly="true"></state>
-	</channel-type>
-
-	<channel-type id="timer" advanced="true">
-		<item-type>Number</item-type>
-		<label>Timer</label>
-		<description>Sensor timer</description>
+	<channel-type id="delay" advanced="true">
+		<item-type>Number:Time</item-type>
+		<label>Delay</label>
+		<description>Sensor delay</description>
 		<state readOnly="true"></state>
 	</channel-type>
 
 	<channel-type id="offtimer" advanced="true">
-		<item-type>Number</item-type>
+		<item-type>Number:Time</item-type>
 		<label>Off Timer</label>
 		<description>Sensor off timer</description>
 		<state readOnly="true"></state>
@@ -223,10 +248,10 @@
 		<state readOnly="true"></state>
 	</channel-type>
 
-	<channel-type id="day">
-		<item-type>String</item-type>
-		<label>Day of Week</label>
-		<description>Day of week for the weather forecast</description>
+	<channel-type id="time">
+		<item-type>DateTime</item-type>
+		<label>Forecast Time</label>
+		<description>Forecast date and time</description>
 		<state readOnly="true"></state>
 	</channel-type>
 

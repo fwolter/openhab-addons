@@ -1,0 +1,138 @@
+{
+  me {
+    email
+    lastContact
+      controllers {
+      id
+      name
+        status {
+        summary
+        online
+        lastContact {
+          timestamp
+        }
+      }    
+      location {
+        coordinates {
+          latitude
+          longitude
+        }
+        forecast(days: 3) {
+          time
+          updateTime
+          conditions
+          averageWindSpeed {
+            value
+            unit
+          }
+          highTemperature {
+            value
+            unit
+          }
+          lowTemperature {
+            value
+            unit
+          }
+          evapotranspiration {
+            value
+            unit
+          }
+          probabilityOfPrecipitation
+          precipitation {
+            value
+            unit
+          }
+          averageHumidity
+        }
+      }
+      zones {
+        id
+        name
+        status {
+          suspendedUntil {
+            timestamp
+          }     
+        }
+        icon {
+          id
+          fileName
+          customImage {
+            id
+            url
+          }
+        }
+        number {
+          value
+          label
+        }
+        scheduledRuns {
+          summary
+          currentRun{
+             id
+            startTime {
+              timestamp
+            }
+            endTime {
+              timestamp
+            }
+            duration
+            status {
+              value
+              label
+            }
+          }
+          runs {
+            startTime {
+              timestamp
+            }
+            duration
+          }
+          nextRun {
+            id
+            startTime {
+              timestamp
+            }
+            endTime {
+              timestamp
+            }
+            duration
+          }
+        }
+        pastRuns {
+          lastRun {
+            id
+            startTime {
+              timestamp
+            }
+            endTime {
+              timestamp
+            }
+            duration
+          }
+        }
+      }
+      sensors {
+        id
+        name
+        input {
+          number
+          label
+        }
+        status {
+          active
+          waterFlow {
+            value
+            unit
+          }
+        }
+        model {
+          modeType
+          active
+          offLevel
+          offTimer
+          delay
+        }
+      }
+    }
+  }
+}

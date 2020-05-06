@@ -10,21 +10,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hydrawise.internal.api;
+
+package org.openhab.binding.hydrawise.internal.api.graphql.schema;
 
 /**
- * Thrown when the Hydrawise cloud or local API returns back a "unauthorized" response to commands
- *
  * @author Dan Cunningham - Initial contribution
  */
-@SuppressWarnings("serial")
-public class HydrawiseAuthenticationException extends Exception {
+public class QueryResponse {
 
-    public HydrawiseAuthenticationException() {
-        super();
-    }
+    public Data data;
 
-    public HydrawiseAuthenticationException(String message) {
-        super(message);
-    }
 }

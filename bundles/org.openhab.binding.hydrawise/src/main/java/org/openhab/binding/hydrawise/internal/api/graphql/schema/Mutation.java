@@ -10,21 +10,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hydrawise.internal.api;
+package org.openhab.binding.hydrawise.internal.api.graphql.schema;
 
 /**
- * Thrown when the Hydrawise cloud or local API returns back a "unauthorized" response to commands
- *
  * @author Dan Cunningham - Initial contribution
  */
-@SuppressWarnings("serial")
-public class HydrawiseAuthenticationException extends Exception {
+public class Mutation {
+    private static final String MUTATION_TEMPLATE = "mutation { %s }";
+    String query;
 
-    public HydrawiseAuthenticationException() {
-        super();
-    }
-
-    public HydrawiseAuthenticationException(String message) {
-        super(message);
+    public Mutation(String graphQLquery) {
+        this.query = String.format(MUTATION_TEMPLATE, graphQLquery);
     }
 }

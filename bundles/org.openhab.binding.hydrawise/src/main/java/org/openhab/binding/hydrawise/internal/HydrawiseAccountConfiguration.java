@@ -10,21 +10,25 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.hydrawise.internal.api;
+package org.openhab.binding.hydrawise.internal;
 
 /**
- * Thrown when the Hydrawise cloud or local API returns back a "unauthorized" response to commands
+ * The {@link HydrawiseAccountConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Dan Cunningham - Initial contribution
  */
-@SuppressWarnings("serial")
-public class HydrawiseAuthenticationException extends Exception {
+public class HydrawiseAccountConfiguration {
 
-    public HydrawiseAuthenticationException() {
-        super();
-    }
+    public String refreshToken;
 
-    public HydrawiseAuthenticationException(String message) {
-        super(message);
-    }
+    public String userName;
+
+    public String password;
+
+    public Boolean savePassword;
+
+    /**
+     * refresh interval in seconds.
+     */
+    public Integer refreshInterval;
 }
