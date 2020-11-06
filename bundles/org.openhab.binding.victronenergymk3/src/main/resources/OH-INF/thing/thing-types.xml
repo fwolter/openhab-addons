@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="victronenergymk3"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<bridge-type id="mk3">
+		<label>Mk3 USB Device</label>
+		<description>Mk3 USB adapter providing an interface to a VE.Bus.</description>
+
+		<config-description>
+			<parameter name="serialPort" type="text" required="true">
+				<label>Serial Port</label>
+				<context>serial-port</context>
+				<description>Serial port the Mk3 USB adapter is connected to.</description>
+			</parameter>
+		</config-description>
+	</bridge-type>
+
+	<thing-type id="genericInverter">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="mk3" />
+		</supported-bridge-type-refs>
+		
+		<label>Victron Energy Inverter</label>
+		<description>A Victron Energy inverter/charger connected via VE.Bus to the Mk3 USB Device.</description>
+
+		<channel-groups>
+			<channel-group typeId="common" id="common" />
+			<channel-group typeId="ram" id="ram" />
+		</channel-groups>
+
+		<config-description>
+			<parameter name="refreshInterval" type="integer" min="100" unit="ms" required="true">
+				<label>Refresh Interval</label>
+				<description>Time between polling of the RAM variables.</description>
+				<default>3000</default>
+			</parameter>
+			<parameter name="address" type="integer" min="0" max="31" required="true">
+				<label>Inverter/Charger Address</label>
+				<description>Address of the inverter/charger.</description>
+				<default>0</default>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<channel-group-type id="common">
+		<label>Common</label>
+		<channels>
+			<channel id="device_state" typeId="device-state" />
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="ram">
+		<label>RAM Variables</label>
+		<channels>
+			<channel id="mains_voltage" typeId="ram-mains-voltage" />
+			<channel id="mains_current" typeId="ram-mains-current" />
+			<channel id="inverter_voltage" typeId="ram-inverter-voltage" />
+			<channel id="inverter_current" typeId="ram-inverter-current" />
+			<channel id="battery_voltage" typeId="ram-battery-voltage" />
+			<channel id="battery_current" typeId="ram-battery-current" />
+			<channel id="battery_voltage_rms" typeId="ram-battery-voltage-rms" />
+			<channel id="inverter_frequency" typeId="ram-inverter-frequency" />
+			<channel id="mains_frequency" typeId="ram-mains-frequency" />
+			<channel id="ac_load_current" typeId="ram-ac-load-current" />
+			<channel id="charge_state" typeId="ram-charge-state" />
+			<channel id="inverter_power_filtered" typeId="ram-inverter-power-filtered" />
+			<channel id="inverter_power2_filtered" typeId="ram-inverter-power2-filtered" />
+			<channel id="output_power_filtered" typeId="ram-output-power-filtered" />
+			<channel id="inverter_power" typeId="ram-inverter-power" />
+			<channel id="inverter_power2" typeId="ram-inverter-power2" />
+			<channel id="output_power" typeId="ram-output-power" />
+			<channel id="grid_power_setpoint" typeId="ram-grid-power-setpoint" />
+		</channels>
+	</channel-group-type>
+
+	<channel-type id="device-state">
+		<item-type>String</item-type>
+		<label>Device State</label>
+		<description>State of the inverter/charger</description>
+		<state readOnly="true">
+			<options>
+				<option value="DOWN">Down</option>
+				<option value="STARTUP">Startup</option>
+				<option value="OFF">Off</option>
+				<option value="DEVICE_IN_SLAVE_MODE">Device in Slave Mode</option>
+				<option value="INVERT_FULL">Invert Full</option>
+				<option value="INVERT_HALF">Invert Half</option>
+				<option value="INVERT_AES">Invert AES</option>
+				<option value="POWER_ASSIST">Power Assist</option>
+				<option value="BYPASS">Bypass</option>
+				<option value="CHARGE_INITIALIZING">Charge Initializing</option>
+				<option value="CHARGE_BULK">Charge Bulk</option>
+				<option value="CHARGE_ABSORPTION">Charge Absorption</option>
+				<option value="CHARGE_FLOAT">Charge Float</option>
+				<option value="CHARGE_STORAGE">Charge Storage</option>
+				<option value="CHARGE_REPEATED_ABSORPTION">Charge Repeated Absorption</option>
+				<option value="CHARGE_FORCED_ABSORPTION">Charge Forced Absorption</option>
+				<option value="CHARGE_EQUALIZE">Charge Equalize</option>
+				<option value="CHARGE_BULK_STOPPED">Charge Bulk Stopped</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<channel-type id="ram-mains-voltage">
+		<item-type>Number:ElectricPotential</item-type>
+		<label>Mains Voltage</label>
+		<state pattern="%.2f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-mains-current">
+		<item-type>Number:ElectricCurrent</item-type>
+		<label>Mains Current</label>
+		<state pattern="%.2f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-inverter-voltage">
+		<item-type>Number:ElectricPotential</item-type>
+		<label>Inverter Voltage</label>
+		<state pattern="%.2f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-inverter-current">
+		<item-type>Number:ElectricCurrent</item-type>
+		<label>Inverter Current</label>
+		<state pattern="%.2f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-battery-voltage">
+		<item-type>Number:ElectricPotential</item-type>
+		<label>Battery Voltage</label>
+		<state pattern="%.2f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-battery-current">
+		<item-type>Number:ElectricCurrent</item-type>
+		<label>Battery Current</label>
+		<state pattern="%.2f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-battery-voltage-rms">
+		<item-type>Number:ElectricPotential</item-type>
+		<label>Battery Voltage RMS</label>
+		<state pattern="%.2f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-inverter-frequency">
+		<item-type>Number:Frequency</item-type>
+		<label>Inverter Frequency</label>
+		<state pattern="%.2f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-mains-frequency">
+		<item-type>Number:Frequency</item-type>
+		<label>Mains Frequency</label>
+		<state pattern="%.2f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-ac-load-current">
+		<item-type>Number:ElectricCurrent</item-type>
+		<label>AC Load Current</label>
+		<state pattern="%.2f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-charge-state">
+		<item-type>Number</item-type>
+		<label>Charge State</label>
+		<state pattern="%.0f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-inverter-power-filtered">
+		<item-type>Number:Power</item-type>
+		<label>Inverter Power Filtered 1</label>
+		<state pattern="%.0f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-inverter-power2-filtered">
+		<item-type>Number:Power</item-type>
+		<label>Inverter Power Filtered 2</label>
+		<state pattern="%.0f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-output-power-filtered">
+		<item-type>Number:Power</item-type>
+		<label>Output Power Filtered</label>
+		<state pattern="%.0f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-inverter-power">
+		<item-type>Number:Power</item-type>
+		<label>Inverter Power 1</label>
+		<state pattern="%.0f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-inverter-power2">
+		<item-type>Number:Power</item-type>
+		<label>Inverter Power 2</label>
+		<state pattern="%.0f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-output-power">
+		<item-type>Number:Power</item-type>
+		<label>Output Power</label>
+		<state pattern="%.0f %unit%" readOnly="true" />
+	</channel-type>
+	<channel-type id="ram-grid-power-setpoint">
+		<item-type>Number:Power</item-type>
+		<label>Grid Power Setpoint</label>
+		<state min="-5000" max="5000" step="100" pattern="%.0f %unit%" />
+	</channel-type>
+
+</thing:thing-descriptions>
