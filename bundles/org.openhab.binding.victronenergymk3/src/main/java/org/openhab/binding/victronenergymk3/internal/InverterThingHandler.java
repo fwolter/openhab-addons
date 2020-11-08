@@ -55,6 +55,9 @@ import org.slf4j.LoggerFactory;
  * The {@link InverterThingHandler} is responsible for handling commands, which are
  * sent to one of the channels.
  *
+ * The Mk3 USB device drops frames when a request is sent by this binding while another request is processed by the Mk3.
+ * A state machine ensures that we never send a request when waiting for a response to a previous request.
+ *
  * @author Fabian Wolter - Initial contribution
  */
 @NonNullByDefault
@@ -133,19 +136,23 @@ public class InverterThingHandler extends BaseThingHandler {
 
         sendCurrentRequest();
 
-        // sender = scheduler.scheduleWithFixedDelay(() -> {
+        // sender = scheduler.scheduleAtFixedRate(() -> {
+        // System.out.print((System.nanoTime() - t) / 1e6 + "ms");
         // byte[] frameL3 = concat(Mk3ProtocolL3.createWriteRamVarRequest(RamVariable.GRID_POWER_SETPOINT),
-        // Mk3ProtocolL3.createWriteDataRequest((short) 100));
+        // Mk3ProtocolL3.createWriteDataRequest((short) -3000));
         //
         // if (state.compareAndSet(Mk3State.IDLE, Mk3State.WRITING)) {
-        // sendBuffer(frameL3);
+        // sendBuffer(frameL3, true);
         // } else {
         // if (sendingBuffer.isPresent()) {
-        // logger.debug("Command dropped: Buffer overflow ###");
+        // logger.debug("Command dropped: Buffer overflow");
         // }
         // sendingBuffer = Optional.of(frameL3);
         // }
-        // }, 0, 150, TimeUnit.MILLISECONDS);
+        //
+        // t = System.nanoTime();
+        // System.out.println(" FINISHED");
+        // }, 0, 3000, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -181,10 +188,10 @@ public class InverterThingHandler extends BaseThingHandler {
 
                     if (state.compareAndSet(Mk3State.IDLE, Mk3State.WRITING)) {
                         System.out.println(HexUtils.bytesToHex(frameL3));
-                        sendBuffer(frameL3);
+                        sendBuffer(frameL3, false);
                     } else {
                         if (sendingBuffer.isPresent()) {
-                            logger.debug("Command dropped: Buffer overflow");
+                            logger.debug("Command dropped: {}: {}: Buffer overflow", channelUID, command);
                         }
                         sendingBuffer = Optional.of(frameL3);
                     }
@@ -200,7 +207,6 @@ public class InverterThingHandler extends BaseThingHandler {
     }
 
     public void processMk3FrameL3(byte[] frameL3) {
-        System.out.println(HexUtils.bytesToHex(frameL3));
         ByteBuffer data = ByteBuffer.wrap(frameL3).order(ByteOrder.LITTLE_ENDIAN);
 
         try {
@@ -210,7 +216,11 @@ public class InverterThingHandler extends BaseThingHandler {
                     responseSuccessfullyReceived();
                     scheduleNextRequest();
                     break;
-                case Mk3ProtocolL3.WINMON_CMD:
+                case Mk3ProtocolL3.WINMON_X_CMD:
+                    System.out.println(HexUtils.bytesToHex(frameL3));
+                    responseSuccessfullyReceived();
+                    break;
+                case Mk3ProtocolL3.WINMON_W_CMD:
                     switch (Byte.toUnsignedInt(data.get(1))) {
                         case Mk3ProtocolL3.RAM_VARIABLE_INFO_RESPONSE:
                             if (frameL3.length < 6) {
@@ -310,12 +320,14 @@ public class InverterThingHandler extends BaseThingHandler {
         }
     }
 
-    private void sendBuffer(byte[] frameL2) {
+    private void sendBuffer(byte[] frameL2, boolean startAnswerTimeout) {
         if (getThing().isEnabled()) { // prevent race condition
             getMk3BridgeHandler().sendBuffer(frameL2);
 
-            receiveTimeout = scheduler.schedule(this::receiveTimeout, Mk3ProtocolL3.RECEIVE_TIMEOUT_MS,
-                    TimeUnit.MILLISECONDS);
+            if (startAnswerTimeout) {
+                receiveTimeout = scheduler.schedule(this::receiveTimeout, Mk3ProtocolL3.RECEIVE_TIMEOUT_MS,
+                        TimeUnit.MILLISECONDS);
+            }
         }
     }
 
@@ -330,7 +342,7 @@ public class InverterThingHandler extends BaseThingHandler {
                 scheduler.execute(this::sendCurrentRequest);
             }
         } else if (state.compareAndSet(Mk3State.WRITING, Mk3State.IDLE)) {
-            logger.debug("Command dropped: Device didn't respond");
+            logger.debug("Command dropped: Device didn't respond after {} tries: {}", readTries + 1, currentRequest);
             sendingBuffer = Optional.empty();
             scheduleNextRequest();
         }
@@ -338,7 +350,7 @@ public class InverterThingHandler extends BaseThingHandler {
 
     private void sendCurrentRequest() {
         if (state.compareAndSet(Mk3State.IDLE, Mk3State.READING)) {
-            sendBuffer(currentRequest.getFrame());
+            sendBuffer(currentRequest.getFrame(), true);
         } else {
             pollPending.set(true);
         }
@@ -358,14 +370,14 @@ public class InverterThingHandler extends BaseThingHandler {
 
         sendingBuffer.ifPresent(buffer -> {
             if (state.compareAndSet(Mk3State.IDLE, Mk3State.WRITING)) {
-                sendBuffer(buffer);
+                sendBuffer(buffer, true);
                 sendingBuffer = Optional.empty();
             }
         });
 
         if (pollPending.get() && state.compareAndSet(Mk3State.IDLE, Mk3State.READING)) {
             pollPending.set(false);
-            sendBuffer(currentRequest.getFrame());
+            sendBuffer(currentRequest.getFrame(), true);
         }
     }
 

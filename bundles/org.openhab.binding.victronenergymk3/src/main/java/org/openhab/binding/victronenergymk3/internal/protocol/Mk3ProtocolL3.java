@@ -38,7 +38,8 @@ public class Mk3ProtocolL3 {
     public static final int RAM_VARIABLE_WRITE_SUCCESSFUL_RESPONSE = 0x87;
     public static final int ADDRESS_CMD = 'A';
     public static final int STATE_CMD = 'S';
-    public static final int WINMON_CMD = 'W';
+    public static final int WINMON_W_CMD = 'Y';
+    public static final int WINMON_X_CMD = 'X';
     private static final int SWITCH_ON = 3;
     private static final int S_CMD_WINMON_1_FLAG = 1;
     private static final int S_CMD_VARIANT_2_FLAG = 1 << 7;
@@ -57,11 +58,11 @@ public class Mk3ProtocolL3 {
     }
 
     public static byte[] createDeviceStateRequest() {
-        return Mk3ProtocolL2.createFrame(WINMON_CMD, 0x0E, 0);
+        return Mk3ProtocolL2.createFrame(WINMON_W_CMD, 0x0E, 0);
     }
 
     public static byte[] createRamVarInfoRequest(RamVariable ramVariable) {
-        return Mk3ProtocolL2.createFrame(WINMON_CMD, 0x36, ramVariable.getRamId());
+        return Mk3ProtocolL2.createFrame(WINMON_W_CMD, 0x36, ramVariable.getRamId());
     }
 
     public static Function<Short, ? extends State> createRamVarScalingFunction(RamVariable ramVariable, short scaleRaw,
@@ -96,15 +97,15 @@ public class Mk3ProtocolL3 {
 
     public static byte[] createReadRamVarRequest(RamVariable ramVariable) {
         byte ramId = ramVariable.getRamId();
-        return Mk3ProtocolL2.createFrame(WINMON_CMD, 0x30, ramId);
+        return Mk3ProtocolL2.createFrame(WINMON_W_CMD, 0x30, ramId);
     }
 
     public static byte[] createWriteRamVarRequest(RamVariable ramVariable) {
-        return Mk3ProtocolL2.createFrame(WINMON_CMD, 0x32, ramVariable.getRamId());
+        return Mk3ProtocolL2.createFrame(WINMON_X_CMD, 0x32, ramVariable.getRamId());
     }
 
     public static byte[] createWriteDataRequest(short value) {
-        return Mk3ProtocolL2.createFrame(WINMON_CMD, 0x34, value, value >> 8);
+        return Mk3ProtocolL2.createFrame(WINMON_X_CMD, 0x34, value, value >> 8);
     }
 
     public static DeviceState convertDeviceState(byte state, byte subState) throws Mk3Exception {
