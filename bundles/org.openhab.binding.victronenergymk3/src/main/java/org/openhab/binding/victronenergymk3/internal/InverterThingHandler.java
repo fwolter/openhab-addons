@@ -47,7 +47,6 @@ import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
 import org.openhab.core.types.State;
 import org.openhab.core.types.UnDefType;
-import org.openhab.core.util.HexUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,6 +152,10 @@ public class InverterThingHandler extends BaseThingHandler {
         // t = System.nanoTime();
         // System.out.println(" FINISHED");
         // }, 0, 3000, TimeUnit.MILLISECONDS);
+
+        // sender = scheduler.scheduleAtFixedRate(() -> {
+        // logger.trace("state: {}", state.get());
+        // }, 0, 200, TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -186,14 +189,15 @@ public class InverterThingHandler extends BaseThingHandler {
                     byte[] frameL3 = concat(Mk3ProtocolL3.createWriteRamVarRequest(ramVariable),
                             Mk3ProtocolL3.createWriteDataRequest(quantity.shortValue()));
 
-                    if (state.compareAndSet(Mk3State.IDLE, Mk3State.WRITING)) {
-                        System.out.println(HexUtils.bytesToHex(frameL3));
-                        sendBuffer(frameL3, false);
-                    } else {
-                        if (sendingBuffer.isPresent()) {
-                            logger.debug("Command dropped: {}: {}: Buffer overflow", channelUID, command);
+                    synchronized (this) {
+                        if (state.compareAndSet(Mk3State.IDLE, Mk3State.WRITING)) {
+                            sendBuffer(frameL3);
+                        } else {
+                            if (sendingBuffer.isPresent()) {
+                                logger.debug("Command dropped: {}: {}: Buffer overflow", channelUID, command);
+                            }
+                            sendingBuffer = Optional.of(frameL3);
                         }
-                        sendingBuffer = Optional.of(frameL3);
                     }
                 } else {
                     logger.warn("Incompatible command type: {}: {}", command.getClass().getSimpleName(), command);
@@ -206,7 +210,7 @@ public class InverterThingHandler extends BaseThingHandler {
         }
     }
 
-    public void processMk3FrameL3(byte[] frameL3) {
+    public synchronized void processMk3FrameL3(byte[] frameL3) {
         ByteBuffer data = ByteBuffer.wrap(frameL3).order(ByteOrder.LITTLE_ENDIAN);
 
         try {
@@ -217,7 +221,6 @@ public class InverterThingHandler extends BaseThingHandler {
                     scheduleNextRequest();
                     break;
                 case Mk3ProtocolL3.WINMON_X_CMD:
-                    System.out.println(HexUtils.bytesToHex(frameL3));
                     responseSuccessfullyReceived();
                     break;
                 case Mk3ProtocolL3.WINMON_W_CMD:
@@ -320,18 +323,16 @@ public class InverterThingHandler extends BaseThingHandler {
         }
     }
 
-    private void sendBuffer(byte[] frameL2, boolean startAnswerTimeout) {
+    private void sendBuffer(byte[] frameL2) {
         if (getThing().isEnabled()) { // prevent race condition
             getMk3BridgeHandler().sendBuffer(frameL2);
 
-            if (startAnswerTimeout) {
-                receiveTimeout = scheduler.schedule(this::receiveTimeout, Mk3ProtocolL3.RECEIVE_TIMEOUT_MS,
-                        TimeUnit.MILLISECONDS);
-            }
+            receiveTimeout = scheduler.schedule(this::receiveTimeout, Mk3ProtocolL3.RECEIVE_TIMEOUT_MS,
+                    TimeUnit.MILLISECONDS);
         }
     }
 
-    private void receiveTimeout() {
+    private synchronized void receiveTimeout() {
         if (state.compareAndSet(Mk3State.READING, Mk3State.IDLE)) {
             if (readTries++ > READ_RETRY_COUNT) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
@@ -348,9 +349,9 @@ public class InverterThingHandler extends BaseThingHandler {
         }
     }
 
-    private void sendCurrentRequest() {
+    private synchronized void sendCurrentRequest() {
         if (state.compareAndSet(Mk3State.IDLE, Mk3State.READING)) {
-            sendBuffer(currentRequest.getFrame(), true);
+            sendBuffer(currentRequest.getFrame());
         } else {
             pollPending.set(true);
         }
@@ -370,14 +371,14 @@ public class InverterThingHandler extends BaseThingHandler {
 
         sendingBuffer.ifPresent(buffer -> {
             if (state.compareAndSet(Mk3State.IDLE, Mk3State.WRITING)) {
-                sendBuffer(buffer, true);
+                sendBuffer(buffer);
                 sendingBuffer = Optional.empty();
             }
         });
 
         if (pollPending.get() && state.compareAndSet(Mk3State.IDLE, Mk3State.READING)) {
             pollPending.set(false);
-            sendBuffer(currentRequest.getFrame(), true);
+            sendBuffer(currentRequest.getFrame());
         }
     }
 
