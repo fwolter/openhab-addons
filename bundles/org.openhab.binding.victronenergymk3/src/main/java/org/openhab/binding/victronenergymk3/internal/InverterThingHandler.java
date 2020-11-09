@@ -107,55 +107,57 @@ public class InverterThingHandler extends BaseThingHandler {
             return;
         }
 
-        initRequests.clear();
-        initRequests.add(new Request.Address(config.address));
-        initRequests.add(new Request.SetWinmonMode());
+        synchronized (this) {
+            initRequests.clear();
+            initRequests.add(new Request.Address(config.address));
+            initRequests.add(new Request.SetWinmonMode());
 
-        for (RamVariable variable : RamVariable.values()) {
-            initRequests.add(new Request.VariableInfo(variable));
+            for (RamVariable variable : RamVariable.values()) {
+                initRequests.add(new Request.VariableInfo(variable));
+            }
+
+            readTries = 0;
+            currentRequest = initRequests.get(0);
+            currentSendDelayMs = 0;
+            state.set(Mk3State.IDLE);
+
+            updateStatus(ThingStatus.UNKNOWN);
+
+            // byte[] frameL3 = concat(Mk3ProtocolL3.createWriteRamVarRequest(RamVariable.GRID_POWER_EN),
+            // Mk3ProtocolL3.createWriteDataRequest((short) 0));
+            //
+            // sendBuffer(frameL3);
+            // try {
+            // Thread.sleep(500);
+            // } catch (InterruptedException e) {
+            // // TODO Auto-generated catch block
+            // e.printStackTrace();
+            // }
+
+            sendCurrentRequest();
+
+            // sender = scheduler.scheduleAtFixedRate(() -> {
+            // System.out.print((System.nanoTime() - t) / 1e6 + "ms");
+            // byte[] frameL3 = concat(Mk3ProtocolL3.createWriteRamVarRequest(RamVariable.GRID_POWER_SETPOINT),
+            // Mk3ProtocolL3.createWriteDataRequest((short) -3000));
+            //
+            // if (state.compareAndSet(Mk3State.IDLE, Mk3State.WRITING)) {
+            // sendBuffer(frameL3, true);
+            // } else {
+            // if (sendingBuffer.isPresent()) {
+            // logger.debug("Command dropped: Buffer overflow");
+            // }
+            // sendingBuffer = Optional.of(frameL3);
+            // }
+            //
+            // t = System.nanoTime();
+            // System.out.println(" FINISHED");
+            // }, 0, 3000, TimeUnit.MILLISECONDS);
+
+            // sender = scheduler.scheduleAtFixedRate(() -> {
+            // logger.trace("state: {}", state.get());
+            // }, 0, 200, TimeUnit.MILLISECONDS);
         }
-
-        readTries = 0;
-        currentRequest = initRequests.get(0);
-        currentSendDelayMs = 0;
-        state.set(Mk3State.IDLE);
-
-        updateStatus(ThingStatus.UNKNOWN);
-
-        // byte[] frameL3 = concat(Mk3ProtocolL3.createWriteRamVarRequest(RamVariable.GRID_POWER_EN),
-        // Mk3ProtocolL3.createWriteDataRequest((short) 0));
-        //
-        // sendBuffer(frameL3);
-        // try {
-        // Thread.sleep(500);
-        // } catch (InterruptedException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
-
-        sendCurrentRequest();
-
-        // sender = scheduler.scheduleAtFixedRate(() -> {
-        // System.out.print((System.nanoTime() - t) / 1e6 + "ms");
-        // byte[] frameL3 = concat(Mk3ProtocolL3.createWriteRamVarRequest(RamVariable.GRID_POWER_SETPOINT),
-        // Mk3ProtocolL3.createWriteDataRequest((short) -3000));
-        //
-        // if (state.compareAndSet(Mk3State.IDLE, Mk3State.WRITING)) {
-        // sendBuffer(frameL3, true);
-        // } else {
-        // if (sendingBuffer.isPresent()) {
-        // logger.debug("Command dropped: Buffer overflow");
-        // }
-        // sendingBuffer = Optional.of(frameL3);
-        // }
-        //
-        // t = System.nanoTime();
-        // System.out.println(" FINISHED");
-        // }, 0, 3000, TimeUnit.MILLISECONDS);
-
-        // sender = scheduler.scheduleAtFixedRate(() -> {
-        // logger.trace("state: {}", state.get());
-        // }, 0, 200, TimeUnit.MILLISECONDS);
     }
 
     @Override
