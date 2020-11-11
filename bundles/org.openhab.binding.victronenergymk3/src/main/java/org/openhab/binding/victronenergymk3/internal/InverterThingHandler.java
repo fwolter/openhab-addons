@@ -392,7 +392,7 @@ public class InverterThingHandler extends BaseThingHandler {
                 return ((Mk3BridgeHandler) handler);
             }
         }
-        throw new IllegalStateException();
+        throw new IllegalStateException("Could not retrieve Bridge or Bridge handler");
     }
 
     private void updateRamValue(RamVariable ramVariable, State state) {
