@@ -54,7 +54,8 @@ import org.slf4j.LoggerFactory;
  * The {@link InverterThingHandler} is responsible for handling commands, which are
  * sent to one of the channels.
  *
- * The Mk3 USB device drops frames when a request is sent by this binding while another request is processed by the Mk3.
+ * The Mk3 USB device drops frames when a request is sent by this binding while another request is processed by the Mk3,
+ * although the protocol would allow this.
  * A state machine ensures that we never send a request when waiting for a response to a previous request.
  *
  * @author Fabian Wolter - Initial contribution
@@ -188,8 +189,10 @@ public class InverterThingHandler extends BaseThingHandler {
                         return;
                     }
 
+                    double convertedValue = 1 / ramVariable.getConverter().apply(quantity.doubleValue());
+
                     byte[] frameL3 = concat(Mk3ProtocolL3.createWriteRamVarRequest(ramVariable),
-                            Mk3ProtocolL3.createWriteDataRequest(quantity.shortValue()));
+                            Mk3ProtocolL3.createWriteDataRequest((short) convertedValue));
 
                     synchronized (this) {
                         if (state.compareAndSet(Mk3State.IDLE, Mk3State.WRITING)) {
