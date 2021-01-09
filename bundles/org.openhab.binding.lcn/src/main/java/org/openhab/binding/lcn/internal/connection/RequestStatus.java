@@ -181,6 +181,11 @@ public class RequestStatus {
     public synchronized void onResponseReceived() {
         if (this.isActive) {
             this.currRequestTimeStamp = 0; // Mark request (if any) as successful
+
+            // Reset timer for next transmission. Equates to scheduleWithFixedDelay().
+            if (this.maxAgeMSec != -1) {
+                this.nextRequestIn(this.maxAgeMSec, System.nanoTime());
+            }
         }
     }
 

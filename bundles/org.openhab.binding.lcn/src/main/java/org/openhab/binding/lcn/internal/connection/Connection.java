@@ -244,7 +244,8 @@ public class Connection {
                                         logger.warn("Data loss while writing to channel: {}", settings.getAddress());
                                     } else {
                                         if (logger.isTraceEnabled()) {
-                                            logger.trace("Sent: {}", new String(data, 0, data.length));
+                                            logger.trace("Sent: {}",
+                                                    new String(data, 0, data.length, LcnDefs.LCN_ENCODING).trim());
                                         }
                                     }
 
