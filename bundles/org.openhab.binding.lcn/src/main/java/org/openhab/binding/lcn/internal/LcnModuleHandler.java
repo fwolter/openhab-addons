@@ -241,11 +241,7 @@ public class LcnModuleHandler extends BaseThingHandler {
      * @param pck the message without line termination
      */
     public void handleStatusMessage(String pck) {
-        for (AbstractLcnModuleSubHandler handler : subHandlers.values()) {
-            if (handler.tryParse(pck)) {
-                break;
-            }
-        }
+        subHandlers.values().forEach(h -> h.tryParse(pck));
 
         metadataSubHandlers.forEach(h -> h.tryParse(pck));
     }

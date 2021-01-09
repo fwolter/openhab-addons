@@ -12,8 +12,8 @@
  */
 package org.openhab.binding.lcn.internal.subhandler;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +25,7 @@ import org.openhab.binding.lcn.internal.common.LcnDefs;
 import org.openhab.binding.lcn.internal.common.LcnException;
 import org.openhab.binding.lcn.internal.common.PckGenerator;
 import org.openhab.binding.lcn.internal.common.Variable;
+import org.openhab.binding.lcn.internal.common.Variable.Type;
 import org.openhab.binding.lcn.internal.connection.ModInfo;
 import org.openhab.core.library.types.DecimalType;
 import org.slf4j.Logger;
@@ -40,8 +41,6 @@ public class LcnModuleVariableSubHandler extends AbstractLcnModuleVariableSubHan
     private final Logger logger = LoggerFactory.getLogger(LcnModuleVariableSubHandler.class);
     private static final Pattern PATTERN = Pattern
             .compile(LcnBindingConstants.ADDRESS_REGEX + "\\.A(?<id>\\d{3})(?<value>\\d+)");
-    private static final Pattern PATTERN_LEGACY = Pattern
-            .compile(LcnBindingConstants.ADDRESS_REGEX + "\\.(?<value>\\d+)");
 
     public LcnModuleVariableSubHandler(LcnModuleHandler handler, ModInfo info) {
         super(handler, info);
@@ -71,8 +70,20 @@ public class LcnModuleVariableSubHandler extends AbstractLcnModuleVariableSubHan
         Variable variable;
         if (matcher.pattern() == PATTERN) {
             variable = Variable.varIdToVar(Integer.parseInt(matcher.group("id")) - 1);
-        } else if (matcher.pattern() == PATTERN_LEGACY) {
+        } else if (matcher.pattern() == LcnBindingConstants.MEASUREMENT_PATTERN_BEFORE_2013) {
             variable = info.getLastRequestedVarWithoutTypeInResponse();
+
+            if (variable == Variable.UNKNOWN) {
+                logger.warn("{}: Received a measurement value which has not been requested. "
+                        + "Reading measurement values by more than one software/peripheral is not supported by modules before 2013.",
+                        info.getAddress());
+                return;
+            }
+
+            if (variable.getType() != Type.VARIABLE) {
+                return;
+            }
+
             info.setLastRequestedVarWithoutTypeInResponse(Variable.UNKNOWN); // Reset
         } else {
             logger.warn("Unexpected pattern: {}", matcher.pattern());
@@ -83,6 +94,6 @@ public class LcnModuleVariableSubHandler extends AbstractLcnModuleVariableSubHan
 
     @Override
     public Collection<Pattern> getPckStatusMessagePatterns() {
-        return Arrays.asList(PATTERN, PATTERN_LEGACY);
+        return List.of(PATTERN, LcnBindingConstants.MEASUREMENT_PATTERN_BEFORE_2013);
     }
 }
