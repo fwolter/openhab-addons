@@ -74,8 +74,9 @@ public class LcnModuleVariableSubHandler extends AbstractLcnModuleVariableSubHan
             variable = info.getLastRequestedVarWithoutTypeInResponse();
 
             if (variable == Variable.UNKNOWN) {
-                logger.warn(info.getAddress() + ": Received a measurement value which has not been requested. "
-                        + "Reading measurement values by more than one software/peripheral is not supported by modules before 2013.");
+                logger.warn("{}: Received a measurement value which has not been requested. "
+                        + "Reading measurement values by more than one software/peripheral is not supported by modules before 2013.",
+                        info.getAddress());
                 return;
             }
 
