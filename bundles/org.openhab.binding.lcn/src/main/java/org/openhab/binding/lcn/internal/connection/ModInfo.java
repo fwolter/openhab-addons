@@ -495,4 +495,11 @@ public class ModInfo {
     public void onLockedKeysResponseReceived() {
         requestStatusLockedKeys.onResponseReceived();
     }
+
+    /**
+     * Returns the module's bus address.
+     */
+    public LcnAddr getAddress() {
+        return addr;
+    }
 }
