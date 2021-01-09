@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 public class LcnModuleRvarSetpointSubHandler extends AbstractLcnModuleVariableSubHandler {
     private final Logger logger = LoggerFactory.getLogger(LcnModuleVariableSubHandler.class);
     private static final Pattern PATTERN = Pattern
-            .compile(LcnBindingConstants.ADDRESS_REGEX + "\\.S(?<id>\\d)(?<value>\\d{5})");
+            .compile(LcnBindingConstants.ADDRESS_REGEX + "\\.S(?<id>\\d)(?<value>\\d{1,5})");
 
     public LcnModuleRvarSetpointSubHandler(LcnModuleHandler handler, ModInfo info) {
         super(handler, info);
