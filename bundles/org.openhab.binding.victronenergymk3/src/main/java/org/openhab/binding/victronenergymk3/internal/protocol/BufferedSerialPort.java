@@ -109,7 +109,8 @@ public class BufferedSerialPort {
                     }
                 }
             } catch (Throwable ex) {
-                logger.warn("Error processing serial port event: {}", ex.getMessage());
+                logger.warn("Error processing serial port event: {}: {}", ex.getClass().getSimpleName(),
+                        ex.getMessage());
             } finally {
                 receiveTimeout = scheduler.schedule(currentFrame::reset, 300, TimeUnit.MILLISECONDS);
             }
