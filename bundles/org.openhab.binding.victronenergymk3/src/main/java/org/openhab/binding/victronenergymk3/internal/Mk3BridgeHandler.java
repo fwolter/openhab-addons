@@ -60,6 +60,8 @@ public class Mk3BridgeHandler extends BaseBridgeHandler {
     public void initialize() {
         config = getConfigAs(Mk3Configuration.class);
 
+        updateStatus(ThingStatus.UNKNOWN);
+
         try {
             SerialPortIdentifier portId = serialPortManager.getIdentifier(config.serialPort);
             if (portId == null) {
@@ -107,6 +109,10 @@ public class Mk3BridgeHandler extends BaseBridgeHandler {
     }
 
     public void sendBuffer(byte[] buffer) {
+        if (getThing().getStatus() == ThingStatus.OFFLINE) {
+            return;
+        }
+
         BufferedSerialPort port = serialPort;
         if (port == null) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.OFFLINE.COMMUNICATION_ERROR,
