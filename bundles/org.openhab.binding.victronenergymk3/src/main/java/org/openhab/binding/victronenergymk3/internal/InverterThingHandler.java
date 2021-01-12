@@ -189,7 +189,7 @@ public class InverterThingHandler extends BaseThingHandler {
                         return;
                     }
 
-                    double convertedValue = 1 / ramVariable.getConverter().apply(quantity.doubleValue());
+                    double convertedValue = ramVariable.getConverter().apply(quantity.doubleValue());
 
                     byte[] frameL3 = concat(Mk3ProtocolL3.createWriteRamVarRequest(ramVariable),
                             Mk3ProtocolL3.createWriteDataRequest((short) convertedValue));
