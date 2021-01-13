@@ -128,7 +128,7 @@ public class ModInfo {
         for (Variable var : Variable.values()) {
             if (var != Variable.UNKNOWN) {
                 this.requestStatusVars.put(var, new RequestStatus(MAX_STATUS_POLLED_VALUEAGE_MSEC, NUM_TRIES,
-                        var.getType() + " " + (var.getNumber() + 1)));
+                        addr + " " + var.getType() + " " + (var.getNumber() + 1)));
             }
         }
     }
@@ -265,19 +265,23 @@ public class ModInfo {
     void update(Connection conn, long timeoutMSec, long currTime) {
         try {
             if (update(conn, timeoutMSec, currTime, requestFirmwareVersion, PckGenerator.requestSn())) {
+                logger.info("{}: Processing Firmware Version", addr);
                 return;
             }
 
             for (int i = 0; i < LcnChannelGroup.OUTPUT.getCount(); ++i) {
                 if (update(conn, timeoutMSec, currTime, requestStatusOutputs[i], PckGenerator.requestOutputStatus(i))) {
+                    logger.info("{}: Processing Output {}", addr, i + 1);
                     return;
                 }
             }
 
             if (update(conn, timeoutMSec, currTime, requestStatusRelays, PckGenerator.requestRelaysStatus())) {
+                logger.info("{}: Processing Relays", addr);
                 return;
             }
             if (update(conn, timeoutMSec, currTime, requestStatusBinSensors, PckGenerator.requestBinSensorsStatus())) {
+                logger.info("{}: Processing Binary Sensors", addr);
                 return;
             }
 
@@ -285,8 +289,12 @@ public class ModInfo {
             if (this.firmwareVersion != -1) { // Firmware version is required
                 // Use the chance to remove a failed "typeless variable" request
                 if (lastRequestedVarWithoutTypeInResponse != Variable.UNKNOWN) {
+                    logger.info("{}: lastRequestedVarWithoutTypeInResponse: {}", addr,
+                            lastRequestedVarWithoutTypeInResponse);
                     RequestStatus requestStatus = requestStatusVars.get(lastRequestedVarWithoutTypeInResponse);
                     if (requestStatus != null && requestStatus.isTimeout(timeoutMSec, currTime)) {
+                        logger.warn("{}: {}: Failed finally after {} tries", addr,
+                                lastRequestedVarWithoutTypeInResponse, NUM_TRIES);
                         lastRequestedVarWithoutTypeInResponse = Variable.UNKNOWN;
                     }
                 }
@@ -311,14 +319,18 @@ public class ModInfo {
                         }
                     }
                 }
+            } else {
+                logger.info("{}: Firmware version unknown", addr);
             }
 
             if (update(conn, timeoutMSec, currTime, requestStatusLedsAndLogicOps,
                     PckGenerator.requestLedsAndLogicOpsStatus())) {
+                logger.info("{}: Processing LEDs", addr);
                 return;
             }
 
             if (update(conn, timeoutMSec, currTime, requestStatusLockedKeys, PckGenerator.requestKeyLocksStatus())) {
+                logger.info("{}: Processing Locked Keys", addr);
                 return;
             }
 

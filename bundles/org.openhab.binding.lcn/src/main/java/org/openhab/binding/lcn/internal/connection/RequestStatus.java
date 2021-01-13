@@ -135,6 +135,10 @@ public class RequestStatus {
      */
     synchronized boolean shouldSendNextRequest(long timeoutMSec, long currTime) throws LcnException {
         if (this.isActive) {
+            if (label.matches(".*VARIABLE [123]{1}")) {
+                logger.info("{}: nextRequestTimeStamp: {} timeoutMSec: {} currTime: {}", label, nextRequestTimeStamp,
+                        timeoutMSec, currTime);
+            }
             if (this.nextRequestTimeStamp != 0 && currTime >= this.nextRequestTimeStamp) {
                 return true;
             }
@@ -146,6 +150,10 @@ public class RequestStatus {
                     currRequestTimeStamp = 0;
                     throw new LcnException(label + ": Failed finally after " + numTries + " tries");
                 }
+            }
+        } else {
+            if (label.contains("VARIABLE 1:") || label.contains("VARIABLE 2:") || label.contains("VARIABLE 3:")) {
+                logger.info("{}: Not active", label);
             }
         }
         return false;
