@@ -68,6 +68,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class LcnModuleHandler extends BaseThingHandler {
     private final Logger logger = LoggerFactory.getLogger(LcnModuleHandler.class);
+    private static final int FIRMWARE_VERSION_LENGTH = 6;
     private static final Map<String, Converter> VALUE_CONVERTERS = new HashMap<>();
     private static final InversionConverter INVERSION_CONVERTER = new InversionConverter();
     private @Nullable LcnAddrMod moduleAddress;
@@ -95,11 +96,11 @@ public class LcnModuleHandler extends BaseThingHandler {
         LcnAddrMod localModuleAddress = moduleAddress = new LcnAddrMod(localConfig.segmentId, localConfig.moduleId);
 
         try {
-            // Determine serial number of manually added modules
+            ModInfo info = getPckGatewayHandler().getModInfo(localModuleAddress);
+            readFirmwareVersionFromProperty().ifPresent(info::setFirmwareVersion);
             requestFirmwareVersionAndSerialNumberIfNotSet();
 
             // create sub handlers
-            ModInfo info = getPckGatewayHandler().getModInfo(localModuleAddress);
             for (LcnChannelGroup type : LcnChannelGroup.values()) {
                 subHandlers.put(type, type.createSubHandler(this, info));
             }
@@ -158,12 +159,26 @@ public class LcnModuleHandler extends BaseThingHandler {
      * @throws LcnException when the handler is not initialized
      */
     protected void requestFirmwareVersionAndSerialNumberIfNotSet() throws LcnException {
-        String serialNumber = getThing().getProperties().get(Thing.PROPERTY_SERIAL_NUMBER);
-        if (serialNumber == null || serialNumber.isEmpty()) {
+        if (readFirmwareVersionFromProperty().isEmpty()) {
             LcnAddrMod localModuleAddress = moduleAddress;
             if (localModuleAddress != null) {
                 getPckGatewayHandler().getModInfo(localModuleAddress).requestFirmwareVersion();
             }
+        }
+    }
+
+    private Optional<Integer> readFirmwareVersionFromProperty() {
+        String prop = getThing().getProperties().get(Thing.PROPERTY_SERIAL_NUMBER);
+
+        if (prop == null || prop.length() < FIRMWARE_VERSION_LENGTH) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(Integer.parseInt(prop.substring(0, FIRMWARE_VERSION_LENGTH), 16));
+        } catch (NumberFormatException e) {
+            logger.warn("{}: Serial number property invalid", moduleAddress);
+            return Optional.empty();
         }
     }
 
