@@ -168,14 +168,14 @@ public class LcnModuleHandler extends BaseThingHandler {
     }
 
     private Optional<Integer> readFirmwareVersionFromProperty() {
-        String prop = getThing().getProperties().get(Thing.PROPERTY_SERIAL_NUMBER);
+        String prop = getThing().getProperties().get(Thing.PROPERTY_FIRMWARE_VERSION);
 
-        if (prop == null || prop.length() < FIRMWARE_VERSION_LENGTH) {
+        if (prop == null || prop.length() != FIRMWARE_VERSION_LENGTH) {
             return Optional.empty();
         }
 
         try {
-            return Optional.of(Integer.parseInt(prop.substring(0, FIRMWARE_VERSION_LENGTH), 16));
+            return Optional.of(Integer.parseInt(prop, 16));
         } catch (NumberFormatException e) {
             logger.warn("{}: Serial number property invalid", moduleAddress);
             return Optional.empty();
@@ -352,6 +352,15 @@ public class LcnModuleHandler extends BaseThingHandler {
      */
     public void updateSerialNumberProperty(String serialNumber) {
         updateProperty(Thing.PROPERTY_SERIAL_NUMBER, serialNumber);
+    }
+
+    /**
+     * Updates the LCN module's serial number property.
+     *
+     * @param serialNumber the new serial number
+     */
+    public void updateFirmwareVersionProperty(String firmwareVersion) {
+        updateProperty(Thing.PROPERTY_FIRMWARE_VERSION, firmwareVersion);
     }
 
     /**
