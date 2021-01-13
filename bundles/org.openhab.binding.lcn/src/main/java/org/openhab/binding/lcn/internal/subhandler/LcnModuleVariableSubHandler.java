@@ -56,7 +56,7 @@ public class LcnModuleVariableSubHandler extends AbstractLcnModuleVariableSubHan
             handler.sendPck(PckGenerator.setVariableRelative(variable, LcnDefs.RelVarRef.CURRENT, relativeChange));
 
             // request new value, if the module doesn't send it on itself
-            if (variable.shouldPollStatusAfterCommand(info.getFirmwareVersion())) {
+            if (info.getFirmwareVersion().map(v -> variable.shouldPollStatusAfterCommand(v)).orElse(true)) {
                 info.refreshVariable(variable);
             }
         } catch (LcnException e) {
