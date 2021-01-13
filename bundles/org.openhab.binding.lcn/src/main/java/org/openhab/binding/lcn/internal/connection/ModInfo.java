@@ -280,8 +280,18 @@ public class ModInfo {
                 logger.info("{}: Processing Relays", addr);
                 return;
             }
+
             if (update(conn, timeoutMSec, currTime, requestStatusBinSensors, PckGenerator.requestBinSensorsStatus())) {
                 logger.info("{}: Processing Binary Sensors", addr);
+                return;
+            }
+
+            if (update(conn, timeoutMSec, currTime, requestStatusLedsAndLogicOps,
+                    PckGenerator.requestLedsAndLogicOpsStatus())) {
+                return;
+            }
+
+            if (update(conn, timeoutMSec, currTime, requestStatusLockedKeys, PckGenerator.requestKeyLocksStatus())) {
                 return;
             }
 
@@ -325,17 +335,6 @@ public class ModInfo {
                     }
                 }
             });
-
-            if (update(conn, timeoutMSec, currTime, requestStatusLedsAndLogicOps,
-                    PckGenerator.requestLedsAndLogicOpsStatus())) {
-                logger.info("{}: Processing LEDs", addr);
-                return;
-            }
-
-            if (update(conn, timeoutMSec, currTime, requestStatusLockedKeys, PckGenerator.requestKeyLocksStatus())) {
-                logger.info("{}: Processing Locked Keys", addr);
-                return;
-            }
 
             // Try to send next acknowledged command. Will also detect failed ones.
             this.tryProcessNextCommandWithAck(conn, timeoutMSec, currTime);
