@@ -277,7 +277,17 @@ public class ModInfo {
             if (update(conn, timeoutMSec, currTime, requestStatusRelays, PckGenerator.requestRelaysStatus())) {
                 return;
             }
+
             if (update(conn, timeoutMSec, currTime, requestStatusBinSensors, PckGenerator.requestBinSensorsStatus())) {
+                return;
+            }
+
+            if (update(conn, timeoutMSec, currTime, requestStatusLedsAndLogicOps,
+                    PckGenerator.requestLedsAndLogicOpsStatus())) {
+                return;
+            }
+
+            if (update(conn, timeoutMSec, currTime, requestStatusLockedKeys, PckGenerator.requestKeyLocksStatus())) {
                 return;
             }
 
@@ -316,15 +326,6 @@ public class ModInfo {
                     }
                 }
             });
-
-            if (update(conn, timeoutMSec, currTime, requestStatusLedsAndLogicOps,
-                    PckGenerator.requestLedsAndLogicOpsStatus())) {
-                return;
-            }
-
-            if (update(conn, timeoutMSec, currTime, requestStatusLockedKeys, PckGenerator.requestKeyLocksStatus())) {
-                return;
-            }
 
             // Try to send next acknowledged command. Will also detect failed ones.
             this.tryProcessNextCommandWithAck(conn, timeoutMSec, currTime);
