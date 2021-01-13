@@ -288,10 +288,12 @@ public class ModInfo {
 
             if (update(conn, timeoutMSec, currTime, requestStatusLedsAndLogicOps,
                     PckGenerator.requestLedsAndLogicOpsStatus())) {
+                logger.info("{}: Processing LEDs", addr);
                 return;
             }
 
             if (update(conn, timeoutMSec, currTime, requestStatusLockedKeys, PckGenerator.requestKeyLocksStatus())) {
+                logger.info("{}: Processing Locked Keys", addr);
                 return;
             }
 
