@@ -303,6 +303,7 @@ public class ModInfo {
                     RequestStatus requestStatus = kv.getValue();
                     try {
                         if (requestStatus.shouldSendNextRequest(timeoutMSec, currTime)) {
+                            logger.info("{}: Processing Variable", addr, kv.getKey());
                             // Detect if we can send immediately or if we have to wait for a "typeless" request first
                             boolean hasTypeInResponse = kv.getKey().hasTypeInResponse(firmwareVersion);
                             if (hasTypeInResponse || this.lastRequestedVarWithoutTypeInResponse == Variable.UNKNOWN) {
