@@ -152,7 +152,7 @@ public class RequestStatus {
                 }
             }
         } else {
-            if (label.contains("VARIABLE 1:") || label.contains("VARIABLE 2:") || label.contains("VARIABLE 3:")) {
+            if (label.matches(".*VARIABLE [123]{1}")) {
                 logger.info("{}: Not active", label);
             }
         }
