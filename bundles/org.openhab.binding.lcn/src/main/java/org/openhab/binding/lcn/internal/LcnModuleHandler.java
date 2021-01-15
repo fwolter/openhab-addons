@@ -404,7 +404,7 @@ public class LcnModuleHandler extends BaseThingHandler {
             LcnAddrMod localModuleAddress = moduleAddress;
             if (connection != null && localModuleAddress != null) {
                 getPckGatewayHandler().getModInfo(localModuleAddress).onAck(LcnBindingConstants.CODE_ACK, connection,
-                        getPckGatewayHandler().getTimeoutMs(), System.nanoTime());
+                        getPckGatewayHandler().getTimeoutMs(), System.currentTimeMillis());
             }
         } catch (LcnException e) {
             logger.warn("Connection or module address not set");

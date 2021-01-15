@@ -121,7 +121,7 @@ public class RequestStatus {
      * Schedules a request to retrieve the current value.
      */
     public synchronized void refresh() {
-        nextRequestIn(0, System.nanoTime());
+        nextRequestIn(0, System.currentTimeMillis());
         this.numRetriesLeft = this.numTries;
     }
 

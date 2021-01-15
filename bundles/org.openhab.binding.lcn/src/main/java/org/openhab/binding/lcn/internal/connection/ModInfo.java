@@ -446,7 +446,7 @@ public class ModInfo {
      * Requests the current value of all LEDs and logic operations, after a LED has been changed by openHAB.
      */
     public void refreshStatusLedsAnLogicAfterChange() {
-        requestStatusLedsAndLogicOps.nextRequestIn(STATUS_REQUEST_DELAY_AFTER_COMMAND_MSEC, System.nanoTime());
+        requestStatusLedsAndLogicOps.nextRequestIn(STATUS_REQUEST_DELAY_AFTER_COMMAND_MSEC, System.currentTimeMillis());
     }
 
     /**
@@ -460,7 +460,7 @@ public class ModInfo {
      * Requests the current locking states of all keys, after a lock state has been changed by openHAB.
      */
     public void refreshStatusStatusLockedKeysAfterChange() {
-        requestStatusLockedKeys.nextRequestIn(STATUS_REQUEST_DELAY_AFTER_COMMAND_MSEC, System.nanoTime());
+        requestStatusLockedKeys.nextRequestIn(STATUS_REQUEST_DELAY_AFTER_COMMAND_MSEC, System.currentTimeMillis());
     }
 
     /**
