@@ -114,7 +114,7 @@ public class RequestStatus {
      */
     public synchronized void nextRequestIn(long delayMSec, long currTime) {
         this.isActive = true;
-        this.nextRequestTimeStamp = currTime + delayMSec * 1000000L;
+        this.nextRequestTimeStamp = currTime + delayMSec;
     }
 
     /**
