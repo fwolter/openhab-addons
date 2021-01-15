@@ -92,7 +92,7 @@ public class RequestStatus {
      * @return true if request timed out
      */
     synchronized boolean isTimeout(long timeoutMSec, long currTime) {
-        return this.isPending() && currTime - this.currRequestTimeStamp >= timeoutMSec * 1000000L;
+        return this.isPending() && currTime - this.currRequestTimeStamp >= timeoutMSec;
     }
 
     /**
