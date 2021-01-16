@@ -135,10 +135,10 @@ public class RequestStatus {
      */
     synchronized boolean shouldSendNextRequest(long timeoutMSec, long currTime) throws LcnException {
         if (this.isActive) {
-            if (label.matches(".*VARIABLE [123]{1}")) {
-                logger.info("{}: nextRequestTimeStamp: {} timeoutMSec: {} currTime: {}", label, nextRequestTimeStamp,
-                        timeoutMSec, currTime);
-            }
+            // if (label.matches(".*VARIABLE [123]{1}")) {
+            // logger.info("{}: nextRequestTimeStamp: {} timeoutMSec: {} currTime: {}", label, nextRequestTimeStamp,
+            // timeoutMSec, currTime);
+            // }
             if (this.nextRequestTimeStamp != 0 && currTime >= this.nextRequestTimeStamp) {
                 return true;
             }
@@ -153,7 +153,7 @@ public class RequestStatus {
             }
         } else {
             if (label.matches(".*VARIABLE [123]{1}")) {
-                logger.info("{}: Not active", label);
+                // logger.info("{}: Not active", label);
             }
         }
         return false;
@@ -192,7 +192,7 @@ public class RequestStatus {
 
             // Reset timer for next transmission. Equates to scheduleWithFixedDelay().
             if (this.maxAgeMSec != -1) {
-                this.nextRequestIn(this.maxAgeMSec, System.nanoTime());
+                this.nextRequestIn(this.maxAgeMSec, System.currentTimeMillis());
             }
         }
     }

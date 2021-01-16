@@ -95,6 +95,10 @@ public class PckGatewayHandler extends BaseBridgeHandler {
 
                 @Override
                 public void onPckMessageReceived(String message) {
+                    // if (ThreadLocalRandom.current().nextInt(0, 4) == 0) {
+                    // logger.info("DROP");
+                    // return;
+                    // }
                     pckListener.ifPresent(l -> l.accept(message));
                     getThing().getThings().stream().filter(t -> t.getStatus() == ThingStatus.ONLINE).map(t -> {
                         LcnModuleHandler handler = (LcnModuleHandler) t.getHandler();

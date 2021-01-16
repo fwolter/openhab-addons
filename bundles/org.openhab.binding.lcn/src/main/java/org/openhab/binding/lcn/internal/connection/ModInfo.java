@@ -265,35 +265,35 @@ public class ModInfo {
     void update(Connection conn, long timeoutMSec, long currTime) {
         try {
             if (update(conn, timeoutMSec, currTime, requestFirmwareVersion, PckGenerator.requestSn())) {
-                logger.info("{}: Processing Firmware Version", addr);
+                // logger.info("{}: Processing Firmware Version", addr);
                 return;
             }
 
             for (int i = 0; i < LcnChannelGroup.OUTPUT.getCount(); ++i) {
                 if (update(conn, timeoutMSec, currTime, requestStatusOutputs[i], PckGenerator.requestOutputStatus(i))) {
-                    logger.info("{}: Processing Output {}", addr, i + 1);
+                    // logger.info("{}: Processing Output {}", addr, i + 1);
                     return;
                 }
             }
 
             if (update(conn, timeoutMSec, currTime, requestStatusRelays, PckGenerator.requestRelaysStatus())) {
-                logger.info("{}: Processing Relays", addr);
+                // logger.info("{}: Processing Relays", addr);
                 return;
             }
 
             if (update(conn, timeoutMSec, currTime, requestStatusBinSensors, PckGenerator.requestBinSensorsStatus())) {
-                logger.info("{}: Processing Binary Sensors", addr);
+                // logger.info("{}: Processing Binary Sensors", addr);
                 return;
             }
 
             if (update(conn, timeoutMSec, currTime, requestStatusLedsAndLogicOps,
                     PckGenerator.requestLedsAndLogicOpsStatus())) {
-                logger.info("{}: Processing LEDs", addr);
+                // logger.info("{}: Processing LEDs", addr);
                 return;
             }
 
             if (update(conn, timeoutMSec, currTime, requestStatusLockedKeys, PckGenerator.requestKeyLocksStatus())) {
-                logger.info("{}: Processing Locked Keys", addr);
+                // logger.info("{}: Processing Locked Keys", addr);
                 return;
             }
 
@@ -301,12 +301,8 @@ public class ModInfo {
             firmwareVersion.ifPresent(firmwareVersion -> { // Firmware version is required
                 // Use the chance to remove a failed "typeless variable" request
                 if (lastRequestedVarWithoutTypeInResponse != Variable.UNKNOWN) {
-                    logger.info("{}: lastRequestedVarWithoutTypeInResponse: {}", addr,
-                            lastRequestedVarWithoutTypeInResponse);
                     RequestStatus requestStatus = requestStatusVars.get(lastRequestedVarWithoutTypeInResponse);
                     if (requestStatus != null && requestStatus.isTimeout(timeoutMSec, currTime)) {
-                        logger.warn("{}: {}: Failed finally after {} tries", addr,
-                                lastRequestedVarWithoutTypeInResponse, NUM_TRIES);
                         lastRequestedVarWithoutTypeInResponse = Variable.UNKNOWN;
                     }
                 }
@@ -315,9 +311,10 @@ public class ModInfo {
                     RequestStatus requestStatus = kv.getValue();
                     try {
                         if (requestStatus.shouldSendNextRequest(timeoutMSec, currTime)) {
-                            logger.info("{}: Processing {}", addr, kv.getKey());
                             // Detect if we can send immediately or if we have to wait for a "typeless" request first
                             boolean hasTypeInResponse = kv.getKey().hasTypeInResponse(firmwareVersion);
+                            logger.info("{}: Processing {} {} {}", addr, kv.getKey(), hasTypeInResponse,
+                                    lastRequestedVarWithoutTypeInResponse);
                             if (hasTypeInResponse || this.lastRequestedVarWithoutTypeInResponse == Variable.UNKNOWN) {
                                 try {
                                     conn.queue(this.addr, false,
@@ -328,7 +325,10 @@ public class ModInfo {
                                     }
                                     return;
                                 } catch (LcnException ex) {
+                                    logger.warn("{}: Failed to generate PCK message: {}: {}", addr, kv.getKey(),
+                                            ex.getMessage());
                                     requestStatus.reset();
+                                    lastRequestedVarWithoutTypeInResponse = Variable.UNKNOWN;
                                 }
                             }
                         }
