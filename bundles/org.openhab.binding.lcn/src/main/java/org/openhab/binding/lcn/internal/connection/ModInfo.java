@@ -496,6 +496,11 @@ public class ModInfo {
         if (requestStatus != null) {
             requestStatus.onResponseReceived();
         }
+
+        if (variable == lastRequestedVarWithoutTypeInResponse) {
+            logger.info("{}: Resetting: {}", addr, variable);
+            lastRequestedVarWithoutTypeInResponse = Variable.UNKNOWN; // Reset
+        }
     }
 
     /**

@@ -79,8 +79,6 @@ public class LcnModuleRvarSetpointSubHandler extends AbstractLcnModuleVariableSu
             if (variable.getType() != Type.REGULATOR) {
                 return;
             }
-
-            info.setLastRequestedVarWithoutTypeInResponse(Variable.UNKNOWN); // Reset
         } else {
             logger.warn("Unexpected pattern: {}", matcher.pattern());
             return;

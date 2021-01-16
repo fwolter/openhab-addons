@@ -73,15 +73,9 @@ public class LcnModuleVariableSubHandler extends AbstractLcnModuleVariableSubHan
         } else if (matcher.pattern() == LcnBindingConstants.MEASUREMENT_PATTERN_BEFORE_2013) {
             variable = info.getLastRequestedVarWithoutTypeInResponse();
 
-            if (variable == Variable.UNKNOWN) {
+            if (variable == Variable.UNKNOWN || variable.getType() != Type.VARIABLE) {
                 return;
             }
-
-            if (variable.getType() != Type.VARIABLE) {
-                return;
-            }
-
-            info.setLastRequestedVarWithoutTypeInResponse(Variable.UNKNOWN); // Reset
         } else {
             logger.warn("Unexpected pattern: {}", matcher.pattern());
             return;
