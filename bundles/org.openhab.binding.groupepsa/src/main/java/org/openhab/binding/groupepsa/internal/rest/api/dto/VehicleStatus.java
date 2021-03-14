@@ -24,7 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 @NonNullByDefault
 public class VehicleStatus {
 
-    private @Nullable ZonedDateTime createdAt;
+    private @Nullable ZonedDateTime updatedAt;
     private @Nullable Embedded _embedded;
     private @Nullable Battery battery;
     private @Nullable DoorsState doorsState;
@@ -99,8 +99,8 @@ public class VehicleStatus {
         _embedded = res_embedded;
     }
 
-    public @Nullable ZonedDateTime getCreatedAt() {
-        return createdAt;
+    public @Nullable ZonedDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
     public @Nullable Battery getBattery() {
@@ -145,7 +145,7 @@ public class VehicleStatus {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).append("createdAt", createdAt).append("_embedded", _embedded)
+        return new ToStringBuilder(this).append("updatedAt", updatedAt).append("_embedded", _embedded)
                 .append("battery", battery).append("doorsState", doorsState).append("energy", energy)
                 .append("environment", environment).append("ignition", ignition).append("kinetic", kinetic)
                 .append("lastPosition", lastPosition).append("preconditionning", preconditionning)
