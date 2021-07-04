@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.openhab.addons.bundles</groupId>
+    <artifactId>org.openhab.addons.reactor.bundles</artifactId>
+    <version>3.2.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>org.openhab.binding.bluetooth.daly</artifactId>
+
+  <name>openHAB Add-ons :: Bundles :: Daly BMS Bluetooth Adapter</name>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.openhab.addons.bundles</groupId>
+      <artifactId>org.openhab.binding.bluetooth</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+          </dependency>
+          
+
+
+<dependency>
+    <groupId>io.kaitai</groupId>
+    <artifactId>kaitai-struct-runtime</artifactId>
+    <version>0.9</version>
+</dependency>
+      <dependency>
+  <groupId>name.valery1707.kaitai</groupId>
+  <artifactId>kaitai-maven-plugin</artifactId>
+  <version>0.1.7-SNAPSHOT</version>
+</dependency>
+
+  </dependencies>
+  
+  <build>    
+  <pluginManagement>
+        <plugins>
+            <plugin>
+            <groupId>name.valery1707.kaitai</groupId>
+            <artifactId>kaitai-maven-plugin</artifactId>
+            <version>0.1.7-SNAPSHOT</version>
+            </plugin>
+        </plugins>
+
+  </pluginManagement>
+</build>
+</project>

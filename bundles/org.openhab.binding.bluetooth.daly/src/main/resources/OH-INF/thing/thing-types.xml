@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="bluetooth"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="bms">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="roaming" />
+			<bridge-type-ref id="bluegiga" />
+			<bridge-type-ref id="bluez" />
+		</supported-bridge-type-refs>
+
+		<label>Daly BMS</label>
+		<description>Daly Battery Management System</description>
+
+		<channel-groups>
+			<channel-group id="common" typeId="common" />
+			<channel-group id="di_states" typeId="di_state" />
+			<channel-group id="do_states" typeId="do_state" />
+			<channel-group id="cells" typeId="cell" />
+		</channel-groups>
+
+		<representation-property>address</representation-property>
+
+		<config-description>
+			<parameter name="refreshInterval" type="integer" unit="s">
+				<label>Refresh Interval</label>
+				<description>The frequency at which the data will refresh</description>
+				<default>60</default>
+				<advanced>true</advanced>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<channel-group-type id="common">
+		<label>Common</label>
+		<channels>
+			<channel id="rssi" typeId="rssi" />
+
+			<channel id="pressure" typeId="pressure" />
+			<channel id="acquisition" typeId="acquisition" />
+			<channel id="current" typeId="current" />
+			<channel id="state_of_charge" typeId="state_of_charge" />
+			<channel id="max_voltage" typeId="max_voltage" />
+			<channel id="max_voltage_cell_no" typeId="max_voltage_cell_no" />
+			<channel id="min_voltage" typeId="min_voltage" />
+			<channel id="min_voltage_cell_no" typeId="min_voltage_cell_no" />
+			<channel id="max_temperature" typeId="max_temperature" />
+			<channel id="max_temperature_cell_no" typeId="max_temperature_cell_no" />
+			<channel id="min_temperature" typeId="min_temperature" />
+			<channel id="min_temperature_cell_no" typeId="min_temperature_cell_no" />
+			<channel id="charge_discharge_status" typeId="charge_discharge_status" />
+			<channel id="charging_mos_tube_status" typeId="charging_mos_tube_status" />
+			<channel id="discharging_mos_tube_status" typeId="discharging_mos_tube_status" />
+			<channel id="bms_life" typeId="bms_life" />
+			<channel id="residual_capacity" typeId="residual_capacity" />
+			<channel id="string_size" typeId="string_size" />
+			<channel id="temperature" typeId="temperature" />
+			<channel id="charger_status" typeId="charger_status" />
+			<channel id="load_status" typeId="load_status" />
+			<channel id="charge_discharge_cycles" typeId="charge_discharge_cycles" />
+			<channel id="failure_status" typeId="failure_status" />
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="di_state">
+		<label>DI States</label>
+		<channels>
+			<channel id="1" typeId="di_do">
+				<label>DI 1</label>
+			</channel>
+			<channel id="2" typeId="di_do">
+				<label>DI 2</label>
+			</channel>
+			<channel id="3" typeId="di_do">
+				<label>DI 3</label>
+			</channel>
+			<channel id="4" typeId="di_do">
+				<label>DI 4</label>
+			</channel>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="do_state">
+		<label>DO States</label>
+		<channels>
+			<channel id="1" typeId="di_do">
+				<label>DO 1</label>
+			</channel>
+			<channel id="2" typeId="di_do">
+				<label>DO 2</label>
+			</channel>
+			<channel id="3" typeId="di_do">
+				<label>DO 3</label>
+			</channel>
+			<channel id="4" typeId="di_do">
+				<label>DO 4</label>
+			</channel>
+		</channels>
+	</channel-group-type>
+
+	<channel-group-type id="cell">
+		<label>Cells</label>
+		<channels>
+			<channel id="voltage" typeId="voltage" />
+			<channel id="temperature" typeId="temperature" />
+			<channel id="equilibrium" typeId="equilibrium" />
+		</channels>
+	</channel-group-type>
+
+	<channel-type id="pressure">
+		<item-type>Number:Voltage</item-type>
+		<label>Pressure Voltage</label>
+		<state readOnly="true" pattern="%.2f %unit%" />
+	</channel-type>
+	<channel-type id="acquisition">
+		<item-type>Number:Voltage</item-type>
+		<label>Acquisition Voltage</label>
+		<state readOnly="true" pattern="%.2f %unit%" />
+	</channel-type>
+	<channel-type id="current">
+		<item-type>Number:ElectricCurrent</item-type>
+		<label>Current</label>
+		<state readOnly="true" pattern="%.1f %unit%" />
+	</channel-type>
+	<channel-type id="state_of_charge">
+		<item-type>Number:Dimensionless</item-type>
+		<label>State of Charge</label>
+		<state readOnly="true" pattern="%.1f %unit%" />
+	</channel-type>
+	<channel-type id="max_voltage">
+		<item-type>Number:Voltage</item-type>
+		<label>Max Cell Voltage</label>
+		<state readOnly="true" pattern="%.3f %unit%" />
+	</channel-type>
+	<channel-type id="max_voltage_cell_no">
+		<item-type>Number</item-type>
+		<label>Max Voltage Cell Number</label>
+		<state readOnly="true" pattern="%d" />
+	</channel-type>
+	<channel-type id="min_voltage">
+		<item-type>Number:Voltage</item-type>
+		<label>Min Cell Voltage</label>
+		<state readOnly="true" pattern="%.3f %unit%" />
+	</channel-type>
+	<channel-type id="min_voltage_cell_no">
+		<item-type>Number</item-type>
+		<label>Min Voltage Cell Number</label>
+		<state readOnly="true" pattern="%d" />
+	</channel-type>
+	<channel-type id="max_temperature">
+		<item-type>Number:Temperature</item-type>
+		<label>Max Cell Temperature</label>
+		<state readOnly="true" pattern="%d %unit%" />
+	</channel-type>
+	<channel-type id="max_temperature_cell_no">
+		<item-type>Number</item-type>
+		<label>Max Temperature Cell Num</label>
+		<state readOnly="true" pattern="%d" />
+	</channel-type>
+	<channel-type id="min_temperature">
+		<item-type>Number:Temperature</item-type>
+		<label>Min Cell Temperature</label>
+		<state readOnly="true" pattern="%d %unit%" />
+	</channel-type>
+	<channel-type id="min_temperature_cell_no">
+		<item-type>Number</item-type>
+		<label>Min Temperature Cell Num</label>
+		<state readOnly="true" pattern="%d" />
+	</channel-type>
+	<channel-type id="charge_discharge_status">
+		<item-type>Number</item-type>
+		<label>Charge Discharge Status</label>
+		<state readOnly="true">
+			<options>
+				<option value="0">Stationary</option>
+				<option value="1">Charged</option>
+				<option value="2">Discharged</option>
+			</options>
+		</state>
+	</channel-type>
+	<channel-type id="charging_mos_tube_status">
+		<item-type>Number</item-type>
+		<label>Charging MOS Tube</label>
+		<state readOnly="true" pattern="%d" />
+	</channel-type>
+	<channel-type id="discharging_mos_tube_status">
+		<item-type>Number</item-type>
+		<label>Discharging MOS Tube</label>
+		<state readOnly="true" pattern="%d" />
+	</channel-type>
+	<channel-type id="bms_life">
+		<item-type>Number</item-type>
+		<label>BMS Life Cycles</label>
+		<state readOnly="true" pattern="%d" />
+	</channel-type>
+	<channel-type id="residual_capacity">
+		<item-type>Number</item-type>
+		<label>Residual Capacity</label>
+		<state readOnly="true" pattern="%.3f %unit%" />
+	</channel-type>
+	<channel-type id="string_size">
+		<item-type>Number</item-type>
+		<label>String Size</label>
+		<state readOnly="true" pattern="%d" />
+	</channel-type>
+	<channel-type id="temperature">
+		<item-type>Number:Temperature</item-type>
+		<label>Temperature</label>
+		<state readOnly="true" pattern="%d %unit%" />
+	</channel-type>
+	<channel-type id="charger_status">
+		<item-type>Number</item-type>
+		<label>Charger Status</label>
+		<state readOnly="true">
+			<options>
+				<option value="0">Disconnected</option>
+				<option value="1">Connected</option>
+			</options>
+		</state>
+	</channel-type>
+	<channel-type id="load_status">
+		<item-type>Number</item-type>
+		<label>Load Status</label>
+        <state readOnly="true">
+            <options>
+                <option value="0">Disconnected</option>
+                <option value="1">Access</option>
+            </options>
+        </state>
+	</channel-type>
+	<channel-type id="charge_discharge_cycles">
+		<item-type>Number</item-type>
+		<label>Charge Discharge Cycles</label>
+		<state readOnly="true" pattern="%d" />
+	</channel-type>
+	<channel-type id="failure_status">
+		<item-type>String</item-type>
+		<label>Failure Status</label>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="di_do">
+		<item-type>Switch</item-type>
+		<label>DI/DO status</label>
+		<state readOnly="true" />
+	</channel-type>
+
+	<channel-type id="voltage">
+		<item-type>Number:Voltage</item-type>
+		<label>Voltage</label>
+		<state readOnly="true" pattern="%.3f %unit%" />
+	</channel-type>
+	<channel-type id="temperature">
+		<item-type>Number:Temperature</item-type>
+		<label>Temperature</label>
+		<state readOnly="true" pattern="%d %unit%" />
+	</channel-type>
+	<channel-type id="equilibrium">
+		<item-type>Switch</item-type>
+		<label>Equilibrium State</label>
+		<state readOnly="true" />
+	</channel-type>
+</thing:thing-descriptions>
