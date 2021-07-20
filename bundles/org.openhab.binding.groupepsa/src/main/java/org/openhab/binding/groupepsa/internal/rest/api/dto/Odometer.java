@@ -12,6 +12,7 @@
  */
 package org.openhab.binding.groupepsa.internal.rest.api.dto;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -21,16 +22,16 @@ import org.eclipse.jdt.annotation.Nullable;
  * @author Arjan Mels - Initial contribution
  */
 @NonNullByDefault
-public class Odemeter {
+public class Odometer {
 
     private @Nullable ZonedDateTime createdAt;
-    private @Nullable Double mileage;
+    private @Nullable BigDecimal mileage;
 
     public @Nullable ZonedDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public @Nullable Double getMileage() {
+    public @Nullable BigDecimal getMileage() {
         return mileage;
     }
 

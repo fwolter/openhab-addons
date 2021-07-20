@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
@@ -52,6 +53,7 @@ import com.google.gson.JsonSyntaxException;
  *
  * @author Arjan Mels - Initial contribution
  */
+@NonNullByDefault
 public class GroupePSAConnectApi {
     private static final Logger logger = LoggerFactory.getLogger(GroupePSAConnectApi.class);
 
@@ -77,8 +79,8 @@ public class GroupePSAConnectApi {
                     }
                 }).registerTypeAdapter(Duration.class, new JsonDeserializer<Duration>() {
                     @Override
-                    public @Nullable Duration deserialize(JsonElement json, Type typeOfT,
-                            JsonDeserializationContext context) throws JsonParseException {
+                    public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                            throws JsonParseException {
                         return Duration.parse(json.getAsJsonPrimitive().getAsString());
                     }
                 }).create();
@@ -101,8 +103,12 @@ public class GroupePSAConnectApi {
     }
 
     static Throwable getRootCause(Throwable e) {
-        while (e.getCause() != null)
-            e = e.getCause();
+        Throwable nextE;
+        do {
+            nextE = e.getCause();
+            if (nextE != null)
+                e = nextE;
+        } while (nextE != null);
         return e;
     }
 
@@ -175,29 +181,18 @@ public class GroupePSAConnectApi {
 
     public @Nullable List<Vehicle> getVehicles() throws GroupePSACommunicationException {
         ContentResponse response = executeRequest(getBaseUrl() + "/user");
-
         User user = parseResponse(response, User.class);
 
         if (user != null) {
-            final List<Vehicle> vehicles = user.getVehicles();
-            if (vehicles != null)
-                return vehicles;
+            return user.getVehicles();
+        } else {
+            return null;
         }
-
-        return null;
     }
 
     public @Nullable VehicleStatus getVehicleStatus(String vin) throws GroupePSACommunicationException {
-        ContentResponse response_odometer = executeRequest(
-                getBaseUrl() + "/user/vehicles/" + vin + "/status?extension=odometer");
-        VehicleStatus status_odometer = parseResponse(response_odometer, VehicleStatus.class);
-
-        ContentResponse response = executeRequest(getBaseUrl() + "/user/vehicles/" + vin + "/status?extension=kinetic");
-        VehicleStatus status = parseResponse(response, VehicleStatus.class);
-        if (status != null && status_odometer != null)
-            status.setOdemeter(status_odometer.getOdemeter());
-        else
-            status = status_odometer;
+        ContentResponse response_odometer = executeRequest(getBaseUrl() + "/user/vehicles/" + vin + "/status");
+        VehicleStatus status = parseResponse(response_odometer, VehicleStatus.class);
 
         return status;
     }

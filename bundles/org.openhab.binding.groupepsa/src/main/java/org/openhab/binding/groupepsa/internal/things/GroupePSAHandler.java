@@ -34,7 +34,6 @@ import org.eclipse.smarthome.core.library.types.QuantityType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.library.unit.MetricPrefix;
 import org.eclipse.smarthome.core.library.unit.SIUnits;
-import org.eclipse.smarthome.core.library.unit.SmartHomeUnits;
 import org.eclipse.smarthome.core.thing.Bridge;
 import org.eclipse.smarthome.core.thing.Channel;
 import org.eclipse.smarthome.core.thing.ChannelUID;
@@ -58,6 +57,8 @@ import org.slf4j.LoggerFactory;
 import com.github.filosganga.geogson.model.Geometry;
 import com.github.filosganga.geogson.model.positions.SinglePosition;
 
+import tec.uom.se.unit.Units;
+
 /**
  * The {@link GroupePSAHandler} is responsible for handling commands, which are
  * sent to one of the channels.
@@ -67,15 +68,16 @@ import com.github.filosganga.geogson.model.positions.SinglePosition;
 @NonNullByDefault
 public class GroupePSAHandler extends BaseThingHandler {
     private static final long DEFAULT_POLLING_INTERVAL_M = TimeUnit.MINUTES.toMinutes(1);
-    private static final int ONLINE_CHECK_M = 15;
+    private static final long DEFAULT_ONLINE_INTERVAL_M = TimeUnit.MINUTES.toMinutes(60);
 
     private final Logger logger = LoggerFactory.getLogger(GroupePSAHandler.class);
 
-    private @Nullable String vin = null;
+    private @Nullable String id = null;
     private long lastQueryTimeMs = 0L;
 
     private @Nullable ScheduledFuture<?> groupepsaPollingJob;
     private long maxQueryFrequencyNanos = TimeUnit.MINUTES.toNanos(1);
+    private long onlineIntervalM;
 
     @Override
     protected @Nullable Bridge getBridge() {
@@ -110,18 +112,23 @@ public class GroupePSAHandler extends BaseThingHandler {
     public void initialize() {
         if (getBridgeHandler() != null) {
             GroupePSAConfiguration currentConfig = getConfigAs(GroupePSAConfiguration.class);
-            final String configVehicleId = currentConfig.getVIN();
-            final Integer pollingIntervalS = currentConfig.getPollingInterval();
+            final String id = currentConfig.getId();
+            final Integer pollingIntervalM = currentConfig.getPollingInterval();
+            final Integer onlineIntervalM = currentConfig.getOnlineInterval();
 
-            if (configVehicleId == null) {
+            if (id == null) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                         "@text/conf-error-no-vehicle-id");
-            } else if (pollingIntervalS != null && pollingIntervalS < 1) {
+            } else if (pollingIntervalM != null && pollingIntervalM < 1) {
                 updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                         "@text/conf-error-invalid-polling-interval");
+            } else if (onlineIntervalM != null && onlineIntervalM < 1) {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                        "@text/conf-error-invalid-online-interval");
             } else {
-                vin = configVehicleId;
-                startGroupePSAPolling(pollingIntervalS);
+                this.id = id;
+                this.onlineIntervalM = onlineIntervalM != null ? onlineIntervalM : DEFAULT_ONLINE_INTERVAL_M;
+                startGroupePSAPolling(pollingIntervalM);
             }
 
         } else {
@@ -144,7 +151,7 @@ public class GroupePSAHandler extends BaseThingHandler {
     @Override
     public void dispose() {
         stopGroupePSAPolling();
-        vin = null;
+        id = null;
     }
 
     private void startGroupePSAPolling(@Nullable Integer pollingIntervalM) {
@@ -176,7 +183,7 @@ public class GroupePSAHandler extends BaseThingHandler {
         if (updatedAt == null)
             return false;
 
-        return updatedAt.isAfter(ZonedDateTime.now().minusMinutes(ONLINE_CHECK_M));
+        return updatedAt.isAfter(ZonedDateTime.now().minusMinutes(onlineIntervalM));
     }
 
     private synchronized void updateGroupePSAState() {
@@ -185,8 +192,8 @@ public class GroupePSAHandler extends BaseThingHandler {
 
         lastQueryTimeMs = System.nanoTime();
 
-        String vin = this.vin;
-        if (vin == null) {
+        String id = this.id;
+        if (id == null) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "@text/conf-error-no-vehicle-id");
             return;
         }
@@ -198,7 +205,7 @@ public class GroupePSAHandler extends BaseThingHandler {
         }
 
         try {
-            VehicleStatus vehicle = groupepsaBridge.getVehicleStatus(vin);
+            VehicleStatus vehicle = groupepsaBridge.getVehicleStatus(id);
 
             logger.trace("Vehicle: {}", vehicle.toString());
 
@@ -221,7 +228,7 @@ public class GroupePSAHandler extends BaseThingHandler {
         } catch (GroupePSACommunicationException e) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
                     "@text/comm-error-query-vehicle-failed");
-            logger.warn("Unable to query groupepsa status for:  {}. Error: {}", vin, e.getMessage());
+            logger.warn("Unable to query groupepsa status for:  {}. Error: {}", id, e.getMessage());
         }
     }
 
@@ -250,8 +257,8 @@ public class GroupePSAHandler extends BaseThingHandler {
             updateState(CHANNEL_DOORS_LOCK, UnDefType.UNDEF);
         }
 
-        updateState(CHANNEL_BATTERY_CURRENT, vehicle.getBattery(), Battery::getCurrent, SmartHomeUnits.AMPERE);
-        updateState(CHANNEL_BATTERY_VOLTAGE, vehicle.getBattery(), Battery::getVoltage, SmartHomeUnits.VOLT);
+        updateState(CHANNEL_BATTERY_CURRENT, vehicle.getBattery(), Battery::getCurrent, Units.AMPERE);
+        updateState(CHANNEL_BATTERY_VOLTAGE, vehicle.getBattery(), Battery::getVoltage, Units.VOLT);
 
         updateState(CHANNEL_ENVIRONMENT_TEMPERATURE, vehicle.getEnvironment(), Environment::getAir, Air::getTemp,
                 SIUnits.CELSIUS);
@@ -262,10 +269,10 @@ public class GroupePSAHandler extends BaseThingHandler {
 
         updateStateBoolean(CHANNEL_MOTION_MOVING, vehicle.getKinetic(), Kinetic::isMoving);
         updateState(CHANNEL_MOTION_ACCELERATION, vehicle.getKinetic(), Kinetic::getAcceleration,
-                SmartHomeUnits.METRE_PER_SQUARE_SECOND);
+                Units.METRE_PER_SQUARE_SECOND);
         updateState(CHANNEL_MOTION_SPEED, vehicle.getKinetic(), Kinetic::getSpeed, SIUnits.KILOMETRE_PER_HOUR);
 
-        updateState(CHANNEL_MOTION_MILEAGE, vehicle.getOdemeter(), Odemeter::getMileage,
+        updateState(CHANNEL_MOTION_MILEAGE, vehicle.getOdometer(), Odometer::getMileage,
                 MetricPrefix.KILO(SIUnits.METRE));
 
         Position lastPosition = vehicle.getLastPosition();
@@ -273,30 +280,34 @@ public class GroupePSAHandler extends BaseThingHandler {
             Geometry<SinglePosition> geometry = lastPosition.getGeometry();
             if (geometry != null) {
                 SinglePosition position = (SinglePosition) geometry.positions();
-                updateState(CHANNEL_POSITION_POSITION,
-                        new PointType(new DecimalType(position.coordinates().getLat()),
-                                new DecimalType(position.coordinates().getLon()),
-                                new DecimalType(position.coordinates().getAlt())));
+                if (Double.isFinite(position.coordinates().getAlt())) {
+                    updateState(CHANNEL_POSITION_POSITION,
+                            new PointType(new DecimalType(position.coordinates().getLat()),
+                                    new DecimalType(position.coordinates().getLon()),
+                                    new DecimalType(position.coordinates().getAlt())));
+                } else {
+                    updateState(CHANNEL_POSITION_POSITION,
+                            new PointType(new DecimalType(position.coordinates().getLat()),
+                                    new DecimalType(position.coordinates().getLon())));
+                }
             } else {
                 updateState(CHANNEL_POSITION_POSITION, UnDefType.UNDEF);
             }
             updateState(CHANNEL_POSITION_HEADING, lastPosition.getProperties(), Properties::getHeading,
-                    SmartHomeUnits.DEGREE_ANGLE);
+                    Units.DEGREE_ANGLE);
             updateState(CHANNEL_POSITION_TYPE, lastPosition.getProperties(), Properties::getType);
             updateState(CHANNEL_POSITION_SIGNALSTRENGTH, lastPosition.getProperties(), Properties::getSignalQuality,
-                    SmartHomeUnits.PERCENT);
+                    Units.PERCENT);
         }
 
-        updateState(CHANNEL_VARIOUS_LASTUPDATED, vehicle.getUpdatedAt());
-        updateState(CHANNEL_VARIOUS_PRIVACY, vehicle.getPrivacy(), Privacy::getState);
-
+        updateState(CHANNEL_VARIOUS_LAST_UPDATED, vehicle.getUpdatedAt());
         updateState(CHANNEL_VARIOUS_PRIVACY, vehicle.getPrivacy(), Privacy::getState);
         updateState(CHANNEL_VARIOUS_BELT, vehicle.getSafety(), Safety::getBeltWarning);
         updateState(CHANNEL_VARIOUS_EMERGENCY, vehicle.getSafety(), Safety::getECallTriggeringRequest);
         updateState(CHANNEL_VARIOUS_SERVICE, vehicle.getService(), Service::getType);
         updateState(CHANNEL_VARIOUS_PRECONDITINING, vehicle.getPreconditionning(), Preconditionning::getAirConditioning,
                 AirConditioning::getStatus);
-        updateState(CHANNEL_VARIOUS_PRECONDITININGFAILURE, vehicle.getPreconditionning(),
+        updateState(CHANNEL_VARIOUS_PRECONDITINING_FAILURE, vehicle.getPreconditionning(),
                 Preconditionning::getAirConditioning, AirConditioning::getFailureCause);
 
         List<Energy> energies = vehicle.getEnergy();
@@ -305,20 +316,20 @@ public class GroupePSAHandler extends BaseThingHandler {
                 if ("Fuel".equalsIgnoreCase(energy.getType())) {
                     updateState(CHANNEL_FUEL_AUTONOMY, energy, Energy::getAutonomy, MetricPrefix.KILO(SIUnits.METRE));
                     updateState(CHANNEL_FUEL_CONSUMPTION, energy, Energy::getConsumption,
-                            SmartHomeUnits.LITRE.divide(MetricPrefix.KILO(SIUnits.METRE)));
-                    updateState(CHANNEL_FUEL_LEVEL, energy, Energy::getLevel, SmartHomeUnits.PERCENT);
+                            Units.LITRE.divide(MetricPrefix.KILO(SIUnits.METRE)));
+                    updateState(CHANNEL_FUEL_LEVEL, energy, Energy::getLevel, Units.PERCENT);
                 } else if ("Electric".equalsIgnoreCase(energy.getType())) {
                     updateState(CHANNEL_ELECTRIC_AUTONOMY, energy, Energy::getAutonomy,
                             MetricPrefix.KILO(SIUnits.METRE));
-                    updateState(CHANNEL_ELECTRIC_RESIDUAL, energy, Energy::getResidual, SmartHomeUnits.KILOWATT_HOUR);
-                    updateState(CHANNEL_ELECTRIC_LEVEL, energy, Energy::getLevel, SmartHomeUnits.PERCENT);
+                    updateState(CHANNEL_ELECTRIC_RESIDUAL, energy, Energy::getResidual, MetricPrefix.KILO(Units.WATT));
+                    updateState(CHANNEL_ELECTRIC_LEVEL, energy, Energy::getLevel, Units.PERCENT);
 
                     updateState(CHANNEL_ELECTRIC_BATTERY_CAPACITY, energy, Energy::getBattery,
-                            BatteryStatus::getCapacity, SmartHomeUnits.KILOWATT_HOUR);
+                            BatteryStatus::getCapacity, MetricPrefix.KILO(Units.WATT));
                     updateState(CHANNEL_ELECTRIC_BATTERY_HEALTH_CAPACITY, energy, Energy::getBattery,
-                            BatteryStatus::getHealth, Health::getCapacity, SmartHomeUnits.PERCENT);
+                            BatteryStatus::getHealth, Health::getCapacity, Units.PERCENT);
                     updateState(CHANNEL_ELECTRIC_BATTERY_HEALTH_RESISTANCE, energy, Energy::getBattery,
-                            BatteryStatus::getHealth, Health::getResistance, SmartHomeUnits.PERCENT);
+                            BatteryStatus::getHealth, Health::getResistance, Units.PERCENT);
 
                     updateState(CHANNEL_ELECTRIC_CHARGING_STATUS, energy, Energy::getCharging, Charging::getStatus);
                     updateState(CHANNEL_ELECTRIC_CHARGING_MODE, energy, Energy::getCharging, Charging::getChargingMode);

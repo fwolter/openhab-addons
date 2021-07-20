@@ -14,7 +14,6 @@ package org.openhab.binding.groupepsa.internal.rest.api.dto;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.ZonedDateTime;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;

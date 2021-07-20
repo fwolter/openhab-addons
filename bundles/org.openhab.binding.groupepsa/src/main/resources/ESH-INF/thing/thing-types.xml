@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <thing:thing-descriptions bindingId="groupepsa"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:thing="https://eclipse.org/smarthome/schemas/thing-description/v1.0.0"
-	xsi:schemaLocation="https://eclipse.org/smarthome/schemas/thing-description/v1.0.0 https://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
 
 	<bridge-type id="bridge">
 		<label>Groupe PSA Web Api Bridge</label>
 		<description>The bridge to communicate with the PSA (Peugeot, Citroen, Vauxhall, Opel, DS) Web API for End-Users</description>
 		<category>WebService</category>
-
-		<properties>
-			<property name="modelId">ConnectedCar v4</property>
-			<property name="protocol">PSA Web API</property>
-		</properties>
 
 		<representation-property>vendor</representation-property>
 
@@ -31,7 +26,7 @@
 			</parameter>
 			<parameter name="userName" type="text" required="true">
 				<label>User Name</label>
-				<description>The user name for which the application key has been issued</description>
+				<description>The user name for the mypeugot/mycitroen/myds/myopel/myvauxhall website or app</description>
 			</parameter>
 			<parameter name="password" type="text" required="true">
 				<context>password</context>
@@ -46,14 +41,14 @@
 				<advanced>true</advanced>
 				<default>07364655-93cb-4194-8158-6b035ac2c24c</default>
 				<label>Client ID</label>
-				<description>The client ID for API access (see:
+				<description>The client ID for API access: can normally left at the default value. (see:
 					https://developer.groupe-psa.io/webapi/b2c/quickstart/connect/#article)</description>
 			</parameter>
 			<parameter name="clientSecret" type="text" required="true">
 				<advanced>true</advanced>
 				<default>F2kK7lC5kF5qN7tM0wT8kE3cW1dP0wC5pI6vC0sQ5iP5cN8cJ8</default>
 				<label>Client Secret</label>
-				<description>The client secret for API access (see:
+				<description>The client secret for API access: can normally left at the default value. (see:
 					https://developer.groupe-psa.io/webapi/b2c/quickstart/connect/#article)</description>
 			</parameter>
 		</config-description>
@@ -82,19 +77,25 @@
 		<properties>
 			<property name="vendor">N/A</property>
 			<property name="model">N/A</property>
+			<property name="vin">N/A</property>
 		</properties>
 
-		<representation-property>vin</representation-property>
+		<representation-property>id</representation-property>
 
 		<config-description>
-			<parameter name="vin" type="text" required="true">
-				<label>Vehicle Identification Number</label>
-				<description>The unique vehicle identifier</description>
+			<parameter name="id" type="text" required="true">
+				<label>ID</label>
+				<description>Vehicle API ID (obtained automatically during discovery, not equal to the VIN)</description>
 			</parameter>
 			<parameter name="pollingInterval" type="integer" required="false" unit="min">
 				<label>Polling Interval</label>
-				<default>60</default>
-				<description>How often the available vehicles should be queried in minutes</description>
+				<default>5</default>
+				<description>How often this vehicle should be polled for updated information</description>
+			</parameter>
+			<parameter name="onlineInterval" type="integer" required="false" unit="min">
+				<label>Online Timeout</label>
+				<default>15</default>
+				<description>Timeout when the vehicle is considered offline</description>
 			</parameter>
 		</config-description>
 
@@ -106,7 +107,10 @@
 		<category>Energy</category>
 		<channels>
 			<channel id="current" typeId="current"/>
-			<channel id="voltage" typeId="voltage"/>
+			<channel id="voltage" typeId="level">
+				<label>Battery Level</label>
+				<description>Battery level</description>
+			</channel>
 		</channels>
 	</channel-group-type>
 
@@ -115,34 +119,10 @@
 		<description>State of the doors</description>
 		<category>Door</category>
 		<channels>
-			<channel id="locked" typeId="doorlock"/>
-			<channel id="driver" typeId="dooropen">
+			<channel id="locked" typeId="doorLock"/>
+			<channel id="driver" typeId="doorOpen">
 				<label>Driver door</label>
 				<description>Driver door open state</description>
-			</channel>
-			<channel id="passenger" typeId="dooropen">
-				<label>Passenger door</label>
-				<description>Passenger door open state</description>
-			</channel>
-			<channel id="rearleft" typeId="dooropen">
-				<label>Rear left door</label>
-				<description>Rear left door open state</description>
-			</channel>
-			<channel id="rearright" typeId="dooropen">
-				<label>Rear right door</label>
-				<description>Rear right door open state</description>
-			</channel>
-			<channel id="trunk" typeId="dooropen">
-				<label>Trunk</label>
-				<description>Trunk open state</description>
-			</channel>
-			<channel id="rearwindow" typeId="dooropen">
-				<label>Rear window</label>
-				<description>Rear window open state</description>
-			</channel>
-			<channel id="roofwindow" typeId="dooropen">
-				<label>Roof window</label>
-				<description>Roof window open state</description>
 			</channel>
 		</channels>
 	</channel-group-type>
@@ -189,12 +169,13 @@
 		<label>Various</label>
 		<description>Miscellaneous information</description>
 		<channels>
+			<channel id="lastupdated" typeId="lastUpdated"/>
 			<channel id="privacy" typeId="privacy"/>
 			<channel id="belt" typeId="belt"/>
 			<channel id="emergency" typeId="emergency"/>
 			<channel id="service" typeId="service"/>
 			<channel id="preconditioning" typeId="preconditioning"/>
-			<channel id="preconditioningfailure" typeId="preconditioningfailure"/>
+			<channel id="preconditioningfailure" typeId="preconditioningFailure"/>
 		</channels>
 	</channel-group-type>
 
@@ -229,7 +210,7 @@
 		<category>Sun</category>
 	</channel-type>
 
-	<channel-type id="doorlock">
+	<channel-type id="doorLock">
 		<item-type>String</item-type>
 		<label>Door lock</label>
 		<description>Door lock state</description>
@@ -249,7 +230,7 @@
 		</state>
 	</channel-type>
 
-	<channel-type id="dooropen">
+	<channel-type id="doorOpen">
 		<item-type>Contact</item-type>
 		<label>Door open</label>
 		<description>Door is open</description>
@@ -339,6 +320,13 @@
 		<state pattern="%.0f %unit%"/>
 	</channel-type>
 
+	<channel-type id="lastupdated">
+		<item-type>DateTime</item-type>
+		<label>Time of Last Update</label>
+		<description>Last time the results were updated on the server</description>
+		<category>Time</category>
+	</channel-type>
+
 	<channel-type id="privacy">
 		<item-type>String</item-type>
 		<label>Privacy status</label>
@@ -404,7 +392,7 @@
 		</state>
 	</channel-type>
 
-	<channel-type id="preconditioningfailure">
+	<channel-type id="preconditioningFailure">
 		<item-type>String</item-type>
 		<label>Air Conditioning Failure</label>
 		<description>Airr conditioning failure cause</description>
@@ -444,15 +432,15 @@
 				<description>Electricity level</description>
 			</channel>
 			<channel id="residual" typeId="residual"/>
-			<channel id="battery_capacity" typeId="capacity"/>
-			<channel id="battery_health_capacity" typeId="healthCapacity"/>
-			<channel id="battery_health_resistance" typeId="healthResistance"/>
-			<channel id="charging_status" typeId="chargingStatus"/>
-			<channel id="charging_mode" typeId="chargingMode"/>
-			<channel id="charging_plugged" typeId="chargingPlugged"/>
-			<channel id="charging_rate" typeId="chargingRate"/>
-			<channel id="charging_remainingTime" typeId="chargingRemainingTime"/>
-			<channel id="charging_nextDelayedTime" typeId="chargingNextDelayedTime"/>
+			<channel id="batteryCapacity" typeId="capacity"/>
+			<channel id="batteryHealthCapacity" typeId="healthCapacity"/>
+			<channel id="batteryHealthResistance" typeId="healthResistance"/>
+			<channel id="chargingStatus" typeId="chargingStatus"/>
+			<channel id="chargingMode" typeId="chargingMode"/>
+			<channel id="chargingPlugged" typeId="chargingPlugged"/>
+			<channel id="chargingRate" typeId="chargingRate"/>
+			<channel id="chargingRemainingTime" typeId="chargingRemainingTime"/>
+			<channel id="chargingNextDelayedTime" typeId="chargingNextDelayedTime"/>
 		</channels>
 	</channel-group-type>
 
@@ -561,10 +549,11 @@
 	</channel-type>
 
 	<channel-type id="chargingNextDelayedTime">
-		<item-type>DateTime</item-type>
-		<label>Next Delayed Charging</label>
-		<description>Time when the next charging starts</description>
+		<item-type>Number:Time</item-type>
+		<label>Time Till Next Charging</label>
+		<description>Time till the next charging starts</description>
 		<category>Time</category>
+		<state pattern="%tT"/>
 	</channel-type>
 
 </thing:thing-descriptions>
