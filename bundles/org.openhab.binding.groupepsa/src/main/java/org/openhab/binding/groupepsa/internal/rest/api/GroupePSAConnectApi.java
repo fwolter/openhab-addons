@@ -73,14 +73,14 @@ public class GroupePSAConnectApi {
         gson = new GsonBuilder().registerTypeAdapterFactory(new GeometryAdapterFactory())
                 .registerTypeAdapter(ZonedDateTime.class, new JsonDeserializer<ZonedDateTime>() {
                     @Override
-                    public ZonedDateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                            throws JsonParseException {
+                    public ZonedDateTime deserialize(@Nullable JsonElement json, @Nullable Type typeOfT,
+                            @Nullable JsonDeserializationContext context) throws JsonParseException {
                         return ZonedDateTime.parse(json.getAsJsonPrimitive().getAsString());
                     }
                 }).registerTypeAdapter(Duration.class, new JsonDeserializer<Duration>() {
                     @Override
-                    public Duration deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                            throws JsonParseException {
+                    public Duration deserialize(@Nullable JsonElement json, @Nullable Type typeOfT,
+                            @Nullable JsonDeserializationContext context) throws JsonParseException {
                         return Duration.parse(json.getAsJsonPrimitive().getAsString());
                     }
                 }).create();
