@@ -179,6 +179,7 @@ public abstract class BoschSHCService<TState extends BoschSHCServiceState> {
             this.logger.warn("Received invalid, expected type {}", this.stateClass.getName());
             return;
         }
+        this.logger.debug("Received state update for service {}: {}", this.serviceName, state);
         this.onStateUpdate(state);
     }
 

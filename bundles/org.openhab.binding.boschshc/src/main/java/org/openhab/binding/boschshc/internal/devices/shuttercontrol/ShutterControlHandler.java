@@ -97,6 +97,7 @@ public class ShutterControlHandler extends BoschSHCHandler {
     }
 
     private void updateChannels(ShutterControlServiceState state) {
+        this.logger.debug("Received state update for shutter control handler {}: {}", this.getBoschID(), state);
         if (state.level != null) {
             // Convert level to open ratio
             int openPercentage = DataConversion.levelToOpenPercentage(state.level);
