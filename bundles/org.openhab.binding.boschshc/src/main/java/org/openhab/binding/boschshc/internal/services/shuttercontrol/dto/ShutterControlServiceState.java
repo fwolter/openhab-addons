@@ -24,7 +24,7 @@ public class ShutterControlServiceState extends BoschSHCServiceState {
     /**
      * Current open ratio of shutter (0.0 [closed] to 1.0 [open])
      */
-    public Double level;
+    public double level;
 
     /**
      * Current operation state of shutter
