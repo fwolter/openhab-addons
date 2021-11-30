@@ -51,6 +51,21 @@ public abstract class LutronHandler extends BaseThingHandler {
 
     public abstract int getIntegrationId();
 
+    /**
+     * Device handler handleUpdate call. Used to send updates to child device handlers from the bridge. Accepts a
+     * LutronCommandNew object.
+     *
+     * @param lutronCommand - LutronCommandNew object
+     */
+    public abstract void handleUpdate(LutronCommandNew lutronCommand);
+
+    /**
+     * Device handler handleUpdate call. Used to send updates to child device handlers from the bridge. Accepts
+     * old-style LIP command parameters.
+     *
+     * @param type - The LutronCommandType
+     * @param parameters - String varargs for LIP command parameters
+     */
     public abstract void handleUpdate(LutronCommandType type, String... parameters);
 
     /**

@@ -17,6 +17,7 @@ import static org.openhab.binding.lutron.internal.LutronBindingConstants.CHANNEL
 import java.math.BigDecimal;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.lutron.internal.protocol.LutronCommandNew;
 import org.openhab.binding.lutron.internal.protocol.OutputCommand;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronCommandType;
 import org.openhab.binding.lutron.internal.protocol.lip.TargetType;
@@ -144,5 +145,10 @@ public class ShadeHandler extends LutronHandler {
                 updateState(CHANNEL_SHADELEVEL, new PercentType(level));
             }
         }
+    }
+
+    @Override
+    public void handleUpdate(LutronCommandNew lutronCommand) {
+        logger.debug("Call to unimplemented handleUpdate method for id {}", getIntegrationId());
     }
 }

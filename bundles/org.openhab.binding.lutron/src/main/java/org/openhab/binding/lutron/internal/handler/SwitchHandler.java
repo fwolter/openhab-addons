@@ -17,6 +17,7 @@ import static org.openhab.binding.lutron.internal.LutronBindingConstants.CHANNEL
 import java.math.BigDecimal;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.openhab.binding.lutron.internal.protocol.LutronCommandNew;
 import org.openhab.binding.lutron.internal.protocol.OutputCommand;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronCommandType;
 import org.openhab.binding.lutron.internal.protocol.lip.TargetType;
@@ -100,6 +101,11 @@ public class SwitchHandler extends LutronHandler {
             }
             postCommand(CHANNEL_SWITCH, level.compareTo(BigDecimal.ZERO) == 0 ? OnOffType.OFF : OnOffType.ON);
         }
+    }
+
+    @Override
+    public void handleUpdate(LutronCommandNew lutronCommand) {
+        logger.debug("Call to unimplemented handleUpdate method for id {}", getIntegrationId());
     }
 
     @Override

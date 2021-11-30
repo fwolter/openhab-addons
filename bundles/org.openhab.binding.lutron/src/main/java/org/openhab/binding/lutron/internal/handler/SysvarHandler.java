@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.lutron.internal.config.SysvarConfig;
+import org.openhab.binding.lutron.internal.protocol.LutronCommandNew;
 import org.openhab.binding.lutron.internal.protocol.SysvarCommand;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronCommandType;
 import org.openhab.core.library.types.DecimalType;
@@ -114,5 +115,10 @@ public class SysvarHandler extends LutronHandler {
             }
             updateState(CHANNEL_VARSTATE, new DecimalType(state));
         }
+    }
+
+    @Override
+    public void handleUpdate(LutronCommandNew lutronCommand) {
+        logger.debug("Call to unimplemented handleUpdate method for id {}", getIntegrationId());
     }
 }

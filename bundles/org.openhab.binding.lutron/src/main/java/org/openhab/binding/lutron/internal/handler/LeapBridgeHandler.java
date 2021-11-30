@@ -54,6 +54,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.lutron.internal.config.LeapBridgeConfig;
 import org.openhab.binding.lutron.internal.discovery.LeapDeviceDiscoveryService;
+import org.openhab.binding.lutron.internal.protocol.DeviceCommand;
 import org.openhab.binding.lutron.internal.protocol.FanSpeedType;
 import org.openhab.binding.lutron.internal.protocol.GroupCommand;
 import org.openhab.binding.lutron.internal.protocol.LutronCommandNew;
@@ -64,10 +65,13 @@ import org.openhab.binding.lutron.internal.protocol.leap.LeapMessageParserCallba
 import org.openhab.binding.lutron.internal.protocol.leap.Request;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.Area;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.ButtonGroup;
+import org.openhab.binding.lutron.internal.protocol.leap.dto.ButtonStatus;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.Device;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.OccupancyGroup;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.ZoneStatus;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronCommandType;
+import org.openhab.binding.lutron.internal.protocol.lip.LutronOperation;
+import org.openhab.binding.lutron.internal.protocol.lip.TargetType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
@@ -126,6 +130,7 @@ public class LeapBridgeHandler extends LutronBridgeHandler implements LeapMessag
     private final Object zoneMapsLock = new Object();
 
     private @Nullable Map<Integer, List<Integer>> deviceButtonMap;
+    private @Nullable Map<Integer, Integer> buttonDeviceMap;
     private final Object deviceButtonMapLock = new Object();
 
     private volatile boolean deviceDataLoaded = false;
@@ -533,6 +538,31 @@ public class LeapBridgeHandler extends LutronBridgeHandler implements LeapMessag
     }
 
     /**
+     * Notify child keypad thing handler of a received button status message.
+     */
+    @Override
+    public void handleButtonUpdate(ButtonStatus buttonStatus) {
+        Integer button = buttonStatus.getButton();
+        int device = getDeviceFromButton(button);
+        int groupIndex = getButtonIndexInGroup(device, button);
+        logger.trace("Handling button update for button {} device {} index {}", button, device, groupIndex); // TODO
+        if (device != 0) {
+            LutronHandler handler = findThingHandler(device);
+            if (handler != null) {
+                if (buttonStatus.eventTypePress()) {
+                    DeviceCommand devCommand = new DeviceCommand(TargetType.KEYPAD, LutronOperation.RESPONSE, device, 0,
+                            groupIndex, DeviceCommand.ACTION_PRESS, null);
+                    handler.handleUpdate(devCommand);
+                } else if (buttonStatus.eventTypeRelease()) {
+                    DeviceCommand devCommand = new DeviceCommand(TargetType.KEYPAD, LutronOperation.RESPONSE, device, 0,
+                            groupIndex, DeviceCommand.ACTION_RELEASE, null);
+                    handler.handleUpdate(devCommand);
+                }
+            }
+        }
+    }
+
+    /**
      * Notify child group handler of a received occupancy group update.
      *
      * @param occupancyStatus
@@ -576,18 +606,40 @@ public class LeapBridgeHandler extends LutronBridgeHandler implements LeapMessag
     @Override
     public void handleMultipleButtonGroupDefinition(List<ButtonGroup> buttonGroupList) {
         Map<Integer, List<Integer>> deviceButtonMap = new HashMap<>();
+        Map<Integer, Integer> buttonDeviceMap = new HashMap<>();
 
         for (ButtonGroup buttonGroup : buttonGroupList) {
             int parentDevice = buttonGroup.getParentDevice();
             logger.trace("Found ButtonGroup: {} parent device: {}", buttonGroup.getButtonGroup(), parentDevice);
             List<Integer> buttonList = buttonGroup.getButtonList();
             deviceButtonMap.put(parentDevice, buttonList);
+            for (Integer button : buttonList) {
+                buttonDeviceMap.put(button, parentDevice);
+            }
         }
         synchronized (deviceButtonMapLock) {
             this.deviceButtonMap = deviceButtonMap;
+            this.buttonDeviceMap = buttonDeviceMap;
             buttonDataLoaded = true;
         }
         checkInitialized();
+
+        SubscribeButtonStatusEvents(deviceButtonMap); // subscribe to button events
+    }
+
+    /**
+     * Subscribe to button status events for all buttons in the device button map.
+     *
+     * @param deviceButtonMap
+     */
+    private void SubscribeButtonStatusEvents(Map<Integer, List<Integer>> deviceButtonMap) {
+        for (Integer device : deviceButtonMap.keySet()) {
+            logger.trace("Subscribing to button events for device {}", device);
+            for (Integer button : deviceButtonMap.get(device)) {
+                logger.trace("Subscribing to events for button {}", button);
+                sendCommand(new LeapCommand(Request.subscribeButtonStatus(button)));
+            }
+        }
     }
 
     @Override
@@ -696,6 +748,42 @@ public class LeapBridgeHandler extends LutronBridgeHandler implements LeapMessag
             } else {
                 logger.debug("Device to button map not populated");
                 return 0;
+            }
+        }
+    }
+
+    /**
+     * Returns parent device number for given LEAP button. Returns 0 if device number cannot be
+     * determined.
+     */
+    public int getDeviceFromButton(int button) {
+        synchronized (deviceButtonMapLock) {
+            if (buttonDeviceMap != null) {
+                Integer device = buttonDeviceMap.get(button);
+                if (device != null) {
+                    return device;
+                } else {
+                    logger.debug("Could not find device for button {}", button);
+                    return 0;
+                }
+            } else {
+                logger.debug("Button to device map not populated");
+                return 0;
+            }
+        }
+    }
+
+    /**
+     * Returns button position in LEAP button group. Returns 0 if button is not in group associated with device or if
+     * device does not have an associated group.
+     */
+    public int getButtonIndexInGroup(int device, int button) {
+        synchronized (deviceButtonMapLock) {
+            List<Integer> groupList = deviceButtonMap.get(device);
+            if (groupList == null) {
+                return 0;
+            } else {
+                return groupList.indexOf(button) + 1;
             }
         }
     }

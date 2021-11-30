@@ -17,6 +17,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.Area;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.ButtonGroup;
+import org.openhab.binding.lutron.internal.protocol.leap.dto.ButtonStatus;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.Device;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.OccupancyGroup;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.ZoneStatus;
@@ -34,6 +35,8 @@ public interface LeapMessageParserCallbacks {
     public void handleEmptyButtonGroupDefinition();
 
     public void handleZoneUpdate(ZoneStatus zoneStatus);
+
+    public void handleButtonUpdate(ButtonStatus buttonStatus);
 
     public void handleGroupUpdate(int groupNumber, String occupancyStatus);
 

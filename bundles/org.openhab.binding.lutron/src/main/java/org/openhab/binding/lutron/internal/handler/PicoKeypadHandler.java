@@ -43,19 +43,23 @@ public class PicoKeypadHandler extends BaseKeypadHandler {
         switch (mod) {
             case "2B":
                 buttonList = kp.getComponents(mod, ComponentType.BUTTON);
-                leapButtonMap = KeypadConfigPico.LEAPBUTTONS_2B;
+                leapButtonMap = KeypadConfigPico.LEAPBUTTONS_F_2B;
+                leapButtonReverseMap = KeypadConfigPico.LEAPBUTTONS_R_2B;
                 break;
             case "2BRL":
                 buttonList = kp.getComponents(mod, ComponentType.BUTTON);
-                leapButtonMap = KeypadConfigPico.LEAPBUTTONS_2BRL;
+                leapButtonMap = KeypadConfigPico.LEAPBUTTONS_F_2BRL;
+                leapButtonReverseMap = KeypadConfigPico.LEAPBUTTONS_R_2BRL;
                 break;
             case "3B":
                 buttonList = kp.getComponents(mod, ComponentType.BUTTON);
-                leapButtonMap = KeypadConfigPico.LEAPBUTTONS_3B;
+                leapButtonMap = KeypadConfigPico.LEAPBUTTONS_F_3B;
+                leapButtonReverseMap = KeypadConfigPico.LEAPBUTTONS_R_3B;
                 break;
             case "4B":
                 buttonList = kp.getComponents(mod, ComponentType.BUTTON);
-                leapButtonMap = KeypadConfigPico.LEAPBUTTONS_4B;
+                leapButtonMap = KeypadConfigPico.LEAPBUTTONS_F_4B;
+                leapButtonReverseMap = KeypadConfigPico.LEAPBUTTONS_R_4B;
                 break;
             default:
                 logger.warn("No valid keypad model defined ({}). Assuming model 3BRL.", mod);
@@ -63,7 +67,8 @@ public class PicoKeypadHandler extends BaseKeypadHandler {
             case "Generic":
             case "3BRL":
                 buttonList = kp.getComponents("3BRL", ComponentType.BUTTON);
-                leapButtonMap = KeypadConfigPico.LEAPBUTTONS_3BRL;
+                leapButtonMap = KeypadConfigPico.LEAPBUTTONS_F_3BRL;
+                leapButtonReverseMap = KeypadConfigPico.LEAPBUTTONS_R_3BRL;
                 break;
         }
     }

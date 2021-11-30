@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.lutron.internal.config.FanConfig;
 import org.openhab.binding.lutron.internal.protocol.FanSpeedType;
+import org.openhab.binding.lutron.internal.protocol.LutronCommandNew;
 import org.openhab.binding.lutron.internal.protocol.OutputCommand;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronCommandType;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronOperation;
@@ -133,5 +134,10 @@ public class FanHandler extends LutronHandler {
             FanSpeedType fanSpeed = FanSpeedType.toFanSpeedType(level.intValue());
             updateState(CHANNEL_FANSPEED, new StringType(fanSpeed.toString()));
         }
+    }
+
+    @Override
+    public void handleUpdate(LutronCommandNew lutronCommand) {
+        logger.debug("Call to unimplemented handleUpdate method for id {}", getIntegrationId());
     }
 }

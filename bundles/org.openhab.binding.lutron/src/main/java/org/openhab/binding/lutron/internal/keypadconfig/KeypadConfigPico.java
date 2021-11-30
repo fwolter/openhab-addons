@@ -28,11 +28,16 @@ import org.openhab.binding.lutron.internal.discovery.project.ComponentType;
 public final class KeypadConfigPico extends KeypadConfig {
 
     // Button mappings for LEAP protocol
-    public static final Map<Integer, Integer> LEAPBUTTONS_2B = Map.of(2, 1, 4, 2);
-    public static final Map<Integer, Integer> LEAPBUTTONS_2BRL = Map.of(2, 1, 4, 2, 5, 3, 6, 4);
-    public static final Map<Integer, Integer> LEAPBUTTONS_3B = Map.of(2, 1, 3, 2, 4, 3);
-    public static final Map<Integer, Integer> LEAPBUTTONS_4B = Map.of(8, 1, 9, 2, 10, 3, 11, 4);
-    public static final Map<Integer, Integer> LEAPBUTTONS_3BRL = Map.of(2, 1, 3, 2, 4, 3, 5, 4, 6, 5);
+    public static final Map<Integer, Integer> LEAPBUTTONS_F_2B = Map.of(2, 1, 4, 2);
+    public static final Map<Integer, Integer> LEAPBUTTONS_R_2B = Map.of(1, 2, 2, 4);
+    public static final Map<Integer, Integer> LEAPBUTTONS_F_2BRL = Map.of(2, 1, 4, 2, 5, 3, 6, 4);
+    public static final Map<Integer, Integer> LEAPBUTTONS_R_2BRL = Map.of(1, 2, 2, 4, 3, 5, 4, 6);
+    public static final Map<Integer, Integer> LEAPBUTTONS_F_3B = Map.of(2, 1, 3, 2, 4, 3);
+    public static final Map<Integer, Integer> LEAPBUTTONS_R_3B = Map.of(1, 2, 2, 3, 3, 4);
+    public static final Map<Integer, Integer> LEAPBUTTONS_F_4B = Map.of(8, 1, 9, 2, 10, 3, 11, 4);
+    public static final Map<Integer, Integer> LEAPBUTTONS_R_4B = Map.of(1, 8, 2, 9, 3, 10, 4, 11);
+    public static final Map<Integer, Integer> LEAPBUTTONS_F_3BRL = Map.of(2, 1, 3, 2, 4, 3, 5, 4, 6, 5);
+    public static final Map<Integer, Integer> LEAPBUTTONS_R_3BRL = Map.of(1, 2, 2, 3, 3, 4, 4, 5, 5, 6);
 
     private static enum Component implements KeypadComponent {
         // Buttons for 2B, 2BRL, 3B, and 3BRL models

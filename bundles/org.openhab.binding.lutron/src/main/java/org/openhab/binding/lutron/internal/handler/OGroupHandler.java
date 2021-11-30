@@ -17,6 +17,7 @@ import static org.openhab.binding.lutron.internal.LutronBindingConstants.CHANNEL
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.lutron.internal.config.OGroupConfig;
 import org.openhab.binding.lutron.internal.protocol.GroupCommand;
+import org.openhab.binding.lutron.internal.protocol.LutronCommandNew;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronCommandType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.Bridge;
@@ -126,5 +127,10 @@ public class OGroupHandler extends LutronHandler {
                 updateState(CHANNEL_GROUPSTATE, new StringType(STATE_UNKNOWN));
             }
         }
+    }
+
+    @Override
+    public void handleUpdate(LutronCommandNew lutronCommand) {
+        logger.debug("Call to unimplemented handleUpdate method for id {}", getIntegrationId());
     }
 }

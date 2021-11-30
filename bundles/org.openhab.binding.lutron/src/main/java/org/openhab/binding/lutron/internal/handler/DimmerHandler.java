@@ -19,8 +19,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.lutron.internal.action.DimmerActions;
 import org.openhab.binding.lutron.internal.config.DimmerConfig;
+import org.openhab.binding.lutron.internal.protocol.LutronCommandNew;
 import org.openhab.binding.lutron.internal.protocol.LutronDuration;
 import org.openhab.binding.lutron.internal.protocol.OutputCommand;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronCommandType;
@@ -142,5 +144,10 @@ public class DimmerHandler extends LutronHandler {
             }
             updateState(CHANNEL_LIGHTLEVEL, new PercentType(level));
         }
+    }
+
+    @Override
+    public void handleUpdate(@NonNull LutronCommandNew lutronCommand) {
+        logger.debug("Call to unimplemented handleUpdate method for id {}", getIntegrationId());
     }
 }

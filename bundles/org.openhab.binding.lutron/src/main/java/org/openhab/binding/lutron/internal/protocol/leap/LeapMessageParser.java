@@ -20,6 +20,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.Area;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.ButtonGroup;
+import org.openhab.binding.lutron.internal.protocol.leap.dto.ButtonStatus;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.Device;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.ExceptionDetail;
 import org.openhab.binding.lutron.internal.protocol.leap.dto.Header;
@@ -95,6 +96,7 @@ public class LeapMessageParser {
                     handleReadResponseMessage(message);
                     break;
                 case "UpdateResponse":
+                    handleUpdateResponseMessage(message);
                     break;
                 case "SubscribeResponse":
                     // Subscribe responses can contain bodies with data
@@ -208,6 +210,43 @@ public class LeapMessageParser {
         }
     }
 
+    /**
+     * Method called by handleMessage() to handle all LEAP UpdateResponse messages.
+     *
+     * @param message LEAP message
+     */
+    private void handleUpdateResponseMessage(JsonObject message) {
+        try {
+            JsonObject header = message.get("Header").getAsJsonObject();
+            Header headerObj = gson.fromJson(header, Header.class);
+
+            if (!header.has("MessageBodyType")) {
+                logger.trace("No MessageBodyType in header");
+                return;
+            }
+            String messageBodyType = header.get("MessageBodyType").getAsString();
+            logger.trace("MessageBodyType: {}", messageBodyType);
+
+            if (!message.has("Body")) {
+                logger.debug("No Body found in message");
+                return;
+            }
+            JsonObject body = message.get("Body").getAsJsonObject();
+
+            switch (messageBodyType) {
+                case "OneButtonStatusEvent":
+                    parseOneButtonStatusEvent(body);
+                    break;
+                default:
+                    logger.debug("Unknown MessageBodyType received: {}", messageBodyType);
+                    break;
+            }
+        } catch (JsonParseException | IllegalStateException e) {
+            logger.debug("Error parsing message: {}", e.getMessage());
+            return;
+        }
+    }
+
     private @Nullable <T extends AbstractMessageBody> T parseBodySingle(JsonObject messageBody, String memberName,
             Class<T> type) {
         try {
@@ -260,6 +299,18 @@ public class LeapMessageParser {
         ZoneStatus zoneStatus = parseBodySingle(messageBody, "ZoneStatus", ZoneStatus.class);
         if (zoneStatus != null) {
             callback.handleZoneUpdate(zoneStatus);
+        }
+    }
+
+    /**
+     * Parses a OneButtonStatusEvent message body.
+     */
+    private void parseOneButtonStatusEvent(JsonObject messageBody) {
+        logger.trace("Parsing OneButtonStatusEvent"); // TODO remove
+        ButtonStatus buttonStatus = parseBodySingle(messageBody, "ButtonStatus", ButtonStatus.class);
+        if (buttonStatus != null) {
+            logger.trace("Calling handleButtonUpdate callback"); // TODO remove
+            callback.handleButtonUpdate(buttonStatus);
         }
     }
 

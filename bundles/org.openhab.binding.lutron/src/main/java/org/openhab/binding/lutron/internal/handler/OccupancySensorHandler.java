@@ -16,6 +16,7 @@ import static org.openhab.binding.lutron.internal.LutronBindingConstants.CHANNEL
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.lutron.internal.protocol.DeviceCommand;
+import org.openhab.binding.lutron.internal.protocol.LutronCommandNew;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronCommandType;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.thing.Bridge;
@@ -87,5 +88,10 @@ public class OccupancySensorHandler extends LutronHandler {
                 updateState(CHANNEL_OCCUPANCYSTATUS, OnOffType.OFF);
             }
         }
+    }
+
+    @Override
+    public void handleUpdate(LutronCommandNew lutronCommand) {
+        logger.debug("Call to unimplemented handleUpdate method for id {}", getIntegrationId());
     }
 }

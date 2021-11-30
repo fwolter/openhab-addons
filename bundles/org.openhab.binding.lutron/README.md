@@ -3,7 +3,7 @@
 This binding integrates with [Lutron](https://www.lutron.com) lighting control and home automation systems.
 It contains support for four different types of Lutron systems via different bridge things:
 
-* RadioRA 2, HomeWorks QS, Caseta, RA2 Select, and other current systems that can be controlled via Lutron Integration Protocol (LIP) or LEAP
+* RadioRA 2, HomeWorks QS, Caseta, RA2 Select, and other current systems that can be controlled via Lutron Integration Protocol (LIP) or Lutron Extensible Application Protocol (LEAP)
 * The original RadioRA system, referred to here as RadioRA Classic
 * Legacy HomeWorks RS232 Processors
 * Grafik Eye 3x/4x systems with GRX-PRG or GRX-CI-PRG control interfaces
@@ -16,7 +16,7 @@ Each is described in a separate section below.
 Homeworks QS support is still a work in progress, since not all features/devices are supported yet.
 RA2 Select systems work with the binding, but full support for all devices still needs to be confirmed.
 Caseta Smart Bridge (non-Pro model) support and support for Caseta occupancy sensors is available only through the experimental leapbridge thing.
-The binding has not been tested with Quantum, QS Standalone, myRoom Plus, or Athena systems.
+The binding has not been tested with Quantum, QS Standalone, myRoom Plus, Athena, or RadioRA 3 systems.
 
 ## Supported Things
 
@@ -76,7 +76,7 @@ If a thing will not come online, but instead has the status "UNKNOWN: Awaiting i
 ### Bridges
 
 Two different bridges are now supported by the binding for current Lutron systems, ipbridge and leapbridge.
-The LIP protocol is supported by ipbridge while the LEAP protocol is supported by leapbridge.
+The Lutron Integration Protocol (LIP) is supported by ipbridge while the Lutron Extensible Application Protocol (LEAP) is supported by leapbridge.
 Current systems support one or both protocols as shown below.
 
 |Bridge Device           | LIP | LEAP |
@@ -93,8 +93,6 @@ If you have a system that supports both protocols, you must decide which you wis
 You should be aware of the following functional differences between the protocols:
 
 * Using LIP on Caseta you can’t receive notifications of occupancy group status changes (occupied/unoccupied/unknown), but using LEAP you can.
-* Conversely, LIP provides notifications of keypad key presses, while LEAP does not (as far as is currently known).
-This means that using ipbridge you can trigger rules and take actions on keypad key presses/releases, but using leapbridge you can’t.
 * Caseta and RA2 Select device discovery is supported via LEAP, but not via LIP.
 * The leapbridge is a bit more complicated to configure because LEAP uses an SSL connections and authenticates using certificates.
 * LIP is a publicly documented protocol, while LEAP is not. This means that Lutron could make a change that breaks LEAP support at any time.
@@ -143,8 +141,6 @@ Bridge lutron:ipbridge:radiora2 [ ipAddress="192.168.1.2", user="lutron", passwo
 The leapbridge is an experimental bridge which allows the binding to work with the Caseta Smart Hub (non-Pro version).
 It can also be used to provide additional features, such as support for occupancy groups and device discovery, when used with Caseta Smart Hub Pro or RA2 Select.
 It uses the LEAP protocol over SSL, which is an undocumented protocol supported by some of Lutron's newer systems.
-Note that the LEAP protocol will not notify the bridge of keypad key presses.
-If you need this useful feature, you should use ipbridge instead.
 You can use both ipbridge and leapbridge at the same time, but each device should only be configured through one bridge.
 You should also be aware that LEAP and LIP integration IDs for the same device can be different.
 

@@ -62,6 +62,18 @@ public class DeviceCommand extends LutronCommandNew {
         this.parameter = parameter;
     }
 
+    public Integer getComponent() {
+        return component;
+    }
+
+    public @Nullable Integer getLeapComponent() {
+        return leapComponent;
+    }
+
+    public Integer getAction() {
+        return action;
+    }
+
     @Override
     public String lipCommand() {
         StringBuilder builder = new StringBuilder().append(operation).append(commandType);

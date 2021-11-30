@@ -16,7 +16,9 @@ import static org.openhab.binding.lutron.internal.LutronBindingConstants.*;
 
 import java.math.BigDecimal;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.lutron.internal.config.BlindConfig;
+import org.openhab.binding.lutron.internal.protocol.LutronCommandNew;
 import org.openhab.binding.lutron.internal.protocol.OutputCommand;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronCommandType;
 import org.openhab.binding.lutron.internal.protocol.lip.TargetType;
@@ -173,5 +175,10 @@ public class BlindHandler extends LutronHandler {
                 updateState(CHANNEL_BLINDLIFTLEVEL, new PercentType(level));
             }
         }
+    }
+
+    @Override
+    public void handleUpdate(@NonNull LutronCommandNew lutronCommand) {
+        logger.debug("Call to unimplemented handleUpdate method for id {}", getIntegrationId());
     }
 }

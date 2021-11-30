@@ -21,9 +21,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.lutron.internal.KeypadComponent;
 import org.openhab.binding.lutron.internal.keypadconfig.KeypadConfig;
 import org.openhab.binding.lutron.internal.protocol.DeviceCommand;
+import org.openhab.binding.lutron.internal.protocol.LutronCommandNew;
 import org.openhab.binding.lutron.internal.protocol.lip.LutronCommandType;
 import org.openhab.binding.lutron.internal.protocol.lip.TargetType;
 import org.openhab.core.library.types.OnOffType;
@@ -55,6 +57,7 @@ public abstract class BaseKeypadHandler extends LutronHandler {
     protected List<KeypadComponent> cciList = new ArrayList<>();
 
     Map<Integer, Integer> leapButtonMap;
+    Map<Integer, Integer> leapButtonReverseMap;
 
     protected int integrationId;
     protected String model;
@@ -346,6 +349,59 @@ public abstract class BaseKeypadHandler extends LutronHandler {
             updateState(channelUID, OnOffType.OFF);
         }
         // Leave CCI channel state undefined on channel init.
+    }
+
+    @Override
+    public void handleUpdate(@NonNull LutronCommandNew lutronCommand) {
+        DeviceCommand deviceCmd;
+        Integer leapComponent = 0;
+        Integer component;
+
+        if (lutronCommand.getType() == LutronCommandType.DEVICE && lutronCommand instanceof DeviceCommand) {
+            deviceCmd = (DeviceCommand) lutronCommand;
+            if (deviceCmd.getLeapComponent() != null) {
+                leapComponent = deviceCmd.getLeapComponent();
+                component = leapButtonReverseMap.get(leapComponent);
+                if (component == null) {
+                    logger.debug("Unable to find component {} in leapButtonReverseMap", leapComponent);
+                    return;
+                }
+            } else {
+                component = deviceCmd.getComponent();
+            }
+            Integer action = deviceCmd.getAction();
+
+            logger.trace("Handling command {} {} {} from keypad {}", lutronCommand.getType(), component, action,
+                    integrationId);
+
+            ChannelUID channelUID = channelFromComponent(component);
+
+            // TODO: Autorelease and CCI code may not be necessary here anymore
+
+            if (channelUID != null) {
+                if (action.equals(DeviceCommand.ACTION_PRESS)) {
+                    if (isButton(component)) {
+                        updateState(channelUID, OnOffType.ON);
+                        if (autoRelease) {
+                            updateState(channelUID, OnOffType.OFF);
+                        }
+                    } else { // component is CCI
+                        updateState(channelUID, OpenClosedType.CLOSED);
+                    }
+                } else if (action.equals(DeviceCommand.ACTION_RELEASE)) {
+                    if (isButton(component)) {
+                        updateState(channelUID, OnOffType.OFF);
+                    } else { // component is CCI
+                        updateState(channelUID, OpenClosedType.OPEN);
+                    }
+                } else if (action.equals(DeviceCommand.ACTION_HOLD)) {
+                    updateState(channelUID, OnOffType.OFF); // Signal a release if we receive a hold code as we will not
+                                                            // get a subsequent release.
+                }
+            } else {
+                logger.warn("Unable to determine channel for component {} in keypad update event message", component);
+            }
+        }
     }
 
     @Override
