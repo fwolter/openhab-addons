@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 @NonNullByDefault
 public class DimmerOutputProfile implements StateProfile {
     private int test;
+
     private final Logger logger = LoggerFactory.getLogger(DimmerOutputProfile.class);
     /** The Profile's UID */
     static final ProfileTypeUID UID = new ProfileTypeUID(LcnBindingConstants.BINDING_ID, "output");
