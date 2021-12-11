@@ -51,6 +51,11 @@ public class DimmerOutputProfile implements StateProfile {
         Optional<Object> ramp = getConfig(profileContext, "ramp");
         Optional<Object> allOutputs = getConfig(profileContext, "controlAllOutputs");
         Optional<Object> outputs12 = getConfig(profileContext, "controlOutputs12");
+        
+        if (ramp == allOutputs) {
+            rampMs = 0;
+            // SAT error
+        }
 
         ramp.ifPresent(b -> {
             if (b instanceof BigDecimal) {
