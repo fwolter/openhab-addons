@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.binding.lcn.internal.common.DimmerOutputCommand;
 import org.openhab.binding.lcn.internal.common.LcnDefs;
 import org.openhab.core.library.types.DecimalType;
@@ -43,6 +44,7 @@ public class DimmerOutputProfile implements StateProfile {
     private int rampMs;
     private boolean controlAllOutputs;
     private boolean controlOutputs12;
+    private @Nullable Optional<Void> test;
 
     public DimmerOutputProfile(ProfileCallback callback, ProfileContext profileContext) {
         this.callback = callback;
@@ -50,6 +52,13 @@ public class DimmerOutputProfile implements StateProfile {
         Optional<Object> ramp = getConfig(profileContext, "ramp");
         Optional<Object> allOutputs = getConfig(profileContext, "controlAllOutputs");
         Optional<Object> outputs12 = getConfig(profileContext, "controlOutputs12");
+
+        test.get();
+        test.get();
+        test.get();
+        test.get();
+        test.get();
+        test.get();
 
         ramp.ifPresent(b -> {
             if (b instanceof BigDecimal) {
