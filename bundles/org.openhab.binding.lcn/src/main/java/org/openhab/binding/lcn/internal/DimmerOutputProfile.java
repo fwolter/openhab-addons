@@ -51,6 +51,10 @@ public class DimmerOutputProfile implements StateProfile {
         Optional<Object> allOutputs = getConfig(profileContext, "controlAllOutputs");
         Optional<Object> outputs12 = getConfig(profileContext, "controlOutputs12");
 
+        if (ramp == allOutputs) {
+            rampMs = 0;
+        }
+
         ramp.ifPresent(b -> {
             if (b instanceof BigDecimal) {
                 rampMs = (int) (((BigDecimal) b).doubleValue() * 1000);
