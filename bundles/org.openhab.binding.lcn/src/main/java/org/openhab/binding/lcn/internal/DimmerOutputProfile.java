@@ -54,6 +54,24 @@ public class DimmerOutputProfile implements StateProfile {
         if (ramp == allOutputs) {
             rampMs = 0;
         }
+        if (ramp == allOutputs) {
+            rampMs = 0;
+        }
+        if (ramp == allOutputs) {
+            rampMs = 0;
+        }
+        if (ramp == allOutputs) {
+            rampMs = 0;
+        }
+        if (ramp == allOutputs) {
+            rampMs = 0;
+        }
+        if (ramp == allOutputs) {
+            rampMs = 0;
+        }
+        if (ramp == allOutputs) {
+            rampMs = 0;
+        }
 
         ramp.ifPresent(b -> {
             if (b instanceof BigDecimal) {
