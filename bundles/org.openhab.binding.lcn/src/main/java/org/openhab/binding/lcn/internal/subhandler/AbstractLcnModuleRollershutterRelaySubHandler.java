@@ -34,8 +34,8 @@ import org.openhab.core.library.types.UpDownType;
  * @author Fabian Wolter - Initial contribution
  */
 @NonNullByDefault
-public class LcnModuleRollershutterRelaySubHandler extends AbstractLcnModuleSubHandler {
-    public LcnModuleRollershutterRelaySubHandler(LcnModuleHandler handler, ModInfo info) {
+public abstract class AbstractLcnModuleRollershutterRelaySubHandler extends AbstractLcnModuleSubHandler {
+    public AbstractLcnModuleRollershutterRelaySubHandler(LcnModuleHandler handler, ModInfo info) {
         super(handler, info);
     }
 

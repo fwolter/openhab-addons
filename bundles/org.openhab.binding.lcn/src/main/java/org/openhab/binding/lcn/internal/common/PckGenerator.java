@@ -333,6 +333,42 @@ public final class PckGenerator {
     }
 
     /**
+     * Generates a command to control the position of roller shutters on relays.
+     *
+     * @param motorNumber of the roller shutter (0-based)
+     * @param percent of the entire roller shutter height
+     * @return the PCK command (without address header) as text
+     * @throws LcnException if out of range
+     */
+    public static String controlShutterPosition(int motorNumber, int percent) throws LcnException {
+        return controlShutter(motorNumber, percent, "JH");
+    }
+
+    /**
+     * Generates a command to control the slat angle of roller shutters on relays.
+     *
+     * @param motorNumber of the roller shutter (0-based)
+     * @param percent of the slat angle
+     * @return the PCK command (without address header) as text
+     * @throws LcnException if out of range
+     */
+    public static String controlShutterSlatAngle(int motorNumber, int percent) throws LcnException {
+        return controlShutter(motorNumber, percent, "JW");
+    }
+
+    private static String controlShutter(int motorNumber, int percent, String command) throws LcnException {
+        if (motorNumber < 0 || motorNumber >= 4) {
+            throw new LcnException("Roller shutter (relay) motor number out of range: " + motorNumber);
+        }
+
+        if (percent < 0 || percent > 100) {
+            throw new LcnException("Roller shutter (relay) position/angle out of range (percent): " + percent);
+        }
+
+        return String.format("%s%03d%03d", command, percent, 1 << motorNumber);
+    }
+
+    /**
      * Generates a binary-sensors status request.
      *
      * @return the PCK command (without address header) as text

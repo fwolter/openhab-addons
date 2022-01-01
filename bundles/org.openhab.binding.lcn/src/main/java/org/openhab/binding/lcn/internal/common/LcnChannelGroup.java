@@ -27,7 +27,8 @@ import org.openhab.binding.lcn.internal.subhandler.LcnModuleLogicSubHandler;
 import org.openhab.binding.lcn.internal.subhandler.LcnModuleOutputSubHandler;
 import org.openhab.binding.lcn.internal.subhandler.LcnModuleRelaySubHandler;
 import org.openhab.binding.lcn.internal.subhandler.LcnModuleRollershutterOutputSubHandler;
-import org.openhab.binding.lcn.internal.subhandler.LcnModuleRollershutterRelaySubHandler;
+import org.openhab.binding.lcn.internal.subhandler.LcnModuleRollershutterRelayPositionSubHandler;
+import org.openhab.binding.lcn.internal.subhandler.LcnModuleRollershutterRelaySlatAngleSubHandler;
 import org.openhab.binding.lcn.internal.subhandler.LcnModuleRvarLockSubHandler;
 import org.openhab.binding.lcn.internal.subhandler.LcnModuleRvarSetpointSubHandler;
 import org.openhab.binding.lcn.internal.subhandler.LcnModuleS0CounterSubHandler;
@@ -44,7 +45,8 @@ public enum LcnChannelGroup {
     OUTPUT(4, LcnModuleOutputSubHandler::new),
     ROLLERSHUTTEROUTPUT(1, LcnModuleRollershutterOutputSubHandler::new),
     RELAY(8, LcnModuleRelaySubHandler::new),
-    ROLLERSHUTTERRELAY(4, LcnModuleRollershutterRelaySubHandler::new),
+    ROLLERSHUTTERRELAY(4, LcnModuleRollershutterRelayPositionSubHandler::new),
+    ROLLERSHUTTERRELAYSLAT(4, LcnModuleRollershutterRelaySlatAngleSubHandler::new),
     LED(12, LcnModuleLedSubHandler::new),
     LOGIC(4, LcnModuleLogicSubHandler::new),
     BINARYSENSOR(8, LcnModuleBinarySensorSubHandler::new),

@@ -12,8 +12,8 @@ Bus members are inter-connected via a free wire in the standard NYM cable. Wirel
 
 ![Illustration of the LCN product family](doc/overview.jpg)
 
-This binding uses TCP/IP to access the LCN bus via the software LCN-PCHK (Windows/Linux) or the DIN rail device LCN-PKE.
-**This means 1 unused LCN-PCHK license or a LCN-PKE is required**
+This binding uses TCP/IP to access the LCN bus via the software LCN-PCHK (Windows/Linux) or the DIN rail device LCN-VISU.
+**This means 1 unused LCN-PCHK license or a LCN-VISU is required**
 
 ## Supported Things
 
@@ -39,7 +39,7 @@ See [Discover LCN Modules](#discover-lcn-modules).
 ### Bridge: LCN PCK Gateway
 
 PCK is the protocol spoken over TCP/IP with a PCK gateway to communicate with the LCN bus.
-Examples for PCK gateways are the *LCN-PCHK* software running on Windows or Linux and the DIN rail mounting device *LCN-PKE*.
+Examples for PCK gateways are the *LCN-PCHK* software running on Windows or Linux and the DIN rail mounting device *LCN-VISU*.
 
 For each LCN bus, interfaced to openHAB, a PCK gateway needs to be added to openHAB as a *Thing*.
 
@@ -131,11 +131,12 @@ If a special command is needed, the [Hit Key](#hit-key) action (German: "Sende T
 |---------------------------------|----------------------------------|------------------------|------|--------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
 | Dimmer Output Control Single    | Ausgang                          | output                 | 1-4  | Dimmer, Switch                 | Sets the dimming value of an output with a given ramp.                                                                        |
 | Relay                           | Relais                           | relay                  | 1-8  | Switch                         | Controls a relay and visualizes its state.                                                                                    |
-| Visualize Binary Sensor         | Binärsensor anzeigen             | binarysensor           | 1-8  | Contact                        | Visualizes the state of a binary sensor (special channel mapping for some devices).                                                                                      |
+| Visualize Binary Sensor         | Binärsensor anzeigen             | binarysensor           | 1-8  | Contact                        | Visualizes the state of a binary sensor (special channel mapping for some devices).                                           |
 | LED Control                     | LED-Steuerung                    | led                    | 1-12 | Text (ON, OFF, BLINK, FLICKER) | Controls an LED and visualizes its current state.                                                                             |
 | Visualize Logic Operations      | Logik Funktion anzeigen          | logic                  | 1-4  | Text (NOT, OR, AND)            | Visualizes the result of the logic operation.                                                                                 |
 | Motor/Shutter on Dimmer Outputs | Motor/Rollladen an Ausgängen     | rollershutteroutput    | 1-4  | Rollershutter                  | Control roller shutters on dimmer outputs                                                                                     |
-| Motor/Shutter on Relays         | Motor/Rollladen an Relais        | rollershutterrelay     | 1-4  | Rollershutter                  | Control roller shutters on relays                                                                                             |
+| Motor/Shutter on Relays         | Motor/Rollladen an Relais        | rollershutterrelay     | 1-4  | Rollershutter                  | Control position of roller shutters on relays (Supports UpDown, StopMove, Percent)                                            |
+| Shutter Slat Angle on Relays    | Rollladenlamellen an Relais      | rollershutterrelayslat | 1-4  | Rollershutter                  | Control slat angle of roller shutters on relays (Supports UpDown, StopMove, Percent)                                          |
 | Variables                       | Variable anzeigen                | variable               | 1-12 | Number                         | Sets and visualizes the value of a variable.                                                                                  |
 | Regulator Set Setpoint          | Regler Sollwert ändern           | rvarsetpoint           | 1-2  | Number                         | Sets and visualizes the setpoint of a regulator.                                                                              |
 | Regulator Lock                  | Regler sperren                   | rvarlock               | 1-2  | Switch                         | Locks a regulator and visualizes its locking state.                                                                           |

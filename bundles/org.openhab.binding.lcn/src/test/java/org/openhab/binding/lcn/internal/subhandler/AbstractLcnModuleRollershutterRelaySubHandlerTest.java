@@ -28,15 +28,16 @@ import org.openhab.core.library.types.UpDownType;
  * @author Fabian Wolter - Initial contribution
  */
 @NonNullByDefault
-public class LcnModuleRollershutterRelaySubHandlerTest extends AbstractTestLcnModuleSubHandler {
-    private @NonNullByDefault({}) LcnModuleRollershutterRelaySubHandler l;
+public class AbstractLcnModuleRollershutterRelaySubHandlerTest extends AbstractTestLcnModuleSubHandler {
+    private @NonNullByDefault({}) AbstractLcnModuleRollershutterRelaySubHandler l;
 
     @Override
     @BeforeEach
     public void setUp() {
         super.setUp();
 
-        l = new LcnModuleRollershutterRelaySubHandler(handler, info);
+        l = new AbstractLcnModuleRollershutterRelaySubHandler(handler, info) {
+        };
     }
 
     @Test
