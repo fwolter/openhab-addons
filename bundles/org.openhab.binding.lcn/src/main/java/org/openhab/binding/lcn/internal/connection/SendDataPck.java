@@ -66,7 +66,7 @@ class SendDataPck extends SendData {
         buffer.write(PckGenerator.generateAddressHeader(this.addr, localSegId == -1 ? 0 : localSegId, this.wantsAck)
                 .getBytes(LcnDefs.LCN_ENCODING));
         buffer.write(this.data);
-        buffer.write(PckGenerator.TERMINATION.getBytes(LcnDefs.LCN_ENCODING));
+        buffer.write("\r\n".getBytes(LcnDefs.LCN_ENCODING));
         return true;
     }
 

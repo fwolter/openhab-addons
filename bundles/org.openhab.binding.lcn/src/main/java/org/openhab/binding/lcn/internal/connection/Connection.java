@@ -180,7 +180,7 @@ public class Connection {
                             String s = new String(readBuffer.array(), aPos, transmittedByteCount, LcnDefs.LCN_ENCODING);
                             int pos1 = 0, pos2 = s.indexOf(PckGenerator.TERMINATION, pos1);
                             while (pos2 != -1) {
-                                String data = s.substring(pos1, pos2);
+                                String data = s.substring(pos1, pos2).trim();
                                 if (logger.isTraceEnabled()) {
                                     logger.trace("Received: '{}'", data);
                                 }

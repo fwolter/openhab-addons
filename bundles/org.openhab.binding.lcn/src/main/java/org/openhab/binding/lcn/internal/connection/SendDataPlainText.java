@@ -17,7 +17,6 @@ import java.io.OutputStream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.lcn.internal.common.LcnDefs;
-import org.openhab.binding.lcn.internal.common.PckGenerator;
 
 /**
  * A plain text to be send to LCN-PCHK.
@@ -50,7 +49,7 @@ class SendDataPlainText extends SendData {
 
     @Override
     boolean write(OutputStream buffer, int localSegId) throws IOException {
-        buffer.write((this.text + PckGenerator.TERMINATION).getBytes(LcnDefs.LCN_ENCODING));
+        buffer.write((this.text + "\r\n").getBytes(LcnDefs.LCN_ENCODING));
         return true;
     }
 
