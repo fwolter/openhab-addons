@@ -12,10 +12,6 @@
  */
 package org.openhab.binding.nightscout.internal;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -26,22 +22,17 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.measure.Unit;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpStatus;
-import org.openhab.binding.nightscout.internal.dto.Entries;
-import org.openhab.binding.nightscout.internal.dto.Entry;
-import org.openhab.binding.nightscout.internal.dto.Status;
+import org.openhab.binding.nightscout.internal.dto.Response;
+import org.openhab.binding.nightscout.internal.dto.Result;
 import org.openhab.core.i18n.TimeZoneProvider;
 import org.openhab.core.library.types.DateTimeType;
-import org.openhab.core.library.types.QuantityType;
+import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.StringType;
-import org.openhab.core.library.unit.MetricPrefix;
-import org.openhab.core.library.unit.Units;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
@@ -62,7 +53,7 @@ import com.google.gson.Gson;
  */
 @NonNullByDefault
 public class NightscoutHandler extends BaseThingHandler {
-    private static final String API_PATH = "/api/v1/";
+    private static final String API_PATH = "/api/v3/";
     private static final Map<String, String> DIRECTIONS = new HashMap<>();
     private static final Duration SENSOR_TIMEOUT = Duration.ofMinutes(15);
     private Gson gson = new Gson();
@@ -70,7 +61,6 @@ public class NightscoutHandler extends BaseThingHandler {
     private TimeZoneProvider timeZoneProvider;
     private @Nullable ScheduledFuture<?> future;
     private @Nullable NightscoutConfiguration config;
-    private Unit<?> glucoseUnit = MetricPrefix.MILLI(Units.MOLE).divide(Units.LITRE);
 
     static {
         DIRECTIONS.put("NONE", "⇼");
@@ -106,37 +96,24 @@ public class NightscoutHandler extends BaseThingHandler {
 
         updateStatus(ThingStatus.UNKNOWN);
 
-        scheduler.execute(() -> {
-            try {
-                Status settings = getResponse("status.json", Status.class);
-                if ("mg/dl".equalsIgnoreCase(settings.getSettings().getUnits())) {
-                    glucoseUnit = MetricPrefix.MILLI(tech.units.indriya.unit.Units.GRAM)
-                            .divide(MetricPrefix.DECI(Units.LITRE));
-                }
-
-                future = scheduler.scheduleWithFixedDelay(this::poll, 0, localConfig.refreshInterval, TimeUnit.SECONDS);
-            } catch (NightscoutException e) {
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
-            } catch (InterruptedException e) {
-                // nothing
-            }
-        });
+        future = scheduler.scheduleWithFixedDelay(this::poll, 0, localConfig.refreshInterval, TimeUnit.SECONDS);
     }
 
     private void poll() {
         try {
-            Entries entries = getResponse("entries/current.json", Entries.class);
+            Response entries = getResponse("entries.json?limit=1&sort$desc=date", Response.class);
 
-            if (!entries.isEmpty()) {
-                Entry entry = entries.get(0);
+            State glucose = UnDefType.UNDEF;
+            State trendArrow = UnDefType.UNDEF;
+
+            if (!entries.getResult().isEmpty()) {
+                Result entry = entries.getResult().get(0);
 
                 if (entry.getType().equals("sgv")) {
-                    State glucose = UnDefType.UNDEF;
-                    State trendArrow = UnDefType.UNDEF;
-                    Instant lastSensorValueReceived = Instant.ofEpochSecond(entry.getDate().longValue());
+                    Instant lastSensorValueReceived = Instant.ofEpochMilli(entry.getDate());
 
-                    if (Duration.between(lastSensorValueReceived, Instant.now()).compareTo(SENSOR_TIMEOUT) > 0) {
-                        glucose = QuantityType.valueOf(entry.getSgv().doubleValue(), glucoseUnit);
+                    if (Duration.between(lastSensorValueReceived, Instant.now()).compareTo(SENSOR_TIMEOUT) < 0) {
+                        glucose = new DecimalType(entry.getSgv());
 
                         trendArrow = UnDefType.NULL;
                         if (DIRECTIONS.containsKey(entry.getDirection())) {
@@ -144,14 +121,14 @@ public class NightscoutHandler extends BaseThingHandler {
                         }
                     }
 
-                    updateGlucoseAndTrendArrow(glucose, trendArrow);
-
                     updateState("last-sensor-value", new DateTimeType(
                             ZonedDateTime.ofInstant(lastSensorValueReceived, timeZoneProvider.getTimeZone())));
                 }
-
-                updateStatus(ThingStatus.ONLINE);
             }
+
+            updateGlucoseAndTrendArrow(glucose, trendArrow);
+
+            updateStatus(ThingStatus.ONLINE);
         } catch (NightscoutException e) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
         } catch (InterruptedException e) {
@@ -172,11 +149,12 @@ public class NightscoutHandler extends BaseThingHandler {
         }
 
         try {
-            ContentResponse response = httpClient.newRequest(localConfig.url + API_PATH + query) //
-                    .header("API-SECRET", hexSha1(localConfig.apiSecret)) //
-                    .send();
+            ContentResponse response = httpClient
+                    .newRequest(localConfig.url + API_PATH + query + "&token=" + localConfig.accessToken).send();
+
             if (response.getStatus() == HttpStatus.OK_200) {
                 var dto = gson.fromJson(response.getContentAsString(), clazz);
+
                 if (dto == null) {
                     throw new NightscoutException("Response is empty");
                 } else {
@@ -185,23 +163,16 @@ public class NightscoutHandler extends BaseThingHandler {
             } else {
                 throw new NightscoutException("Unexpected status code: " + response.getStatus());
             }
-        } catch (ExecutionException | NoSuchAlgorithmException e) {
+        } catch (ExecutionException e) {
             String message = e.getMessage();
             if (message != null && message.contains("Authentication challenge without WWW-Authenticate header")) {
-                throw new NightscoutException("API_SECRET incorrect");
+                throw new NightscoutException("Access token incorrect");
             } else {
                 throw new NightscoutException("Failed to connect to Nightscout: " + e.getMessage());
             }
         } catch (TimeoutException e) {
             throw new NightscoutException("Timeout when connecting to Nightscout");
         }
-    }
-
-    private String hexSha1(String input) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        digest.update(input.getBytes(StandardCharsets.UTF_8));
-
-        return String.format("%040x", new BigInteger(1, digest.digest()));
     }
 
     @Override

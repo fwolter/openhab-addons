@@ -10,18 +10,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.openhab.binding.nightscout.internal;
+package org.openhab.binding.nightscout.internal.dto;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import java.util.List;
 
 /**
- * The {@link NightscoutConfiguration} class contains fields mapping thing configuration parameters.
  *
  * @author Fabian Wolter - Initial contribution
  */
-@NonNullByDefault
-public class NightscoutConfiguration {
-    public String url = "";
-    public String accessToken = "";
-    public int refreshInterval = 10;
+public class Response {
+    private List<Result> result;
+
+    public List<Result> getResult() {
+        return result;
+    }
 }

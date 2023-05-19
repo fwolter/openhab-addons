@@ -12,8 +12,6 @@
  */
 package org.openhab.binding.nightscout.internal;
 
-import static org.openhab.binding.nightscout.internal.NightscoutBindingConstants.THING_TYPE_NIGHTSCOUT;
-
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -39,7 +37,8 @@ import org.osgi.service.component.annotations.Reference;
 @NonNullByDefault
 @Component(configurationPid = "binding.nightscout", service = ThingHandlerFactory.class)
 public class NightscoutHandlerFactory extends BaseThingHandlerFactory {
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set.of(THING_TYPE_NIGHTSCOUT);
+    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Set
+            .of(new ThingTypeUID("nightscout", "nightscout"));
     private HttpClient httpClient;
     private TimeZoneProvider timeZoneProvider;
 
@@ -59,7 +58,7 @@ public class NightscoutHandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        if (THING_TYPE_NIGHTSCOUT.equals(thingTypeUID)) {
+        if (SUPPORTED_THING_TYPES_UIDS.contains(thingTypeUID)) {
             return new NightscoutHandler(thing, httpClient, timeZoneProvider);
         }
 

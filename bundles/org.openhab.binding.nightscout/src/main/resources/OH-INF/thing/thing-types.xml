@@ -18,12 +18,13 @@
 			<parameter name="url" type="text" required="true">
 				<context>url</context>
 				<label>Nightscout Base URL</label>
-				<description>Base URL of the Nightscout instance. E.g. http://localhost</description>
+				<default>http://localhost</default>
+				<description>Base URL of the Nightscout instance.</description>
 			</parameter>
-			<parameter name="apiSecret" type="text" required="true">
+			<parameter name="accessToken" type="text" required="true">
 				<context>password</context>
-				<label>API Secret</label>
-				<description>The API secret of the Nightscout instance, configured in the server configuration variable API_SECRET.</description>
+				<label>Access Token</label>
+				<description>The access token of a subject added via the Nightscout admin tools.</description>
 			</parameter>
 			<parameter name="refreshInterval" type="integer" unit="s" min="1">
 				<label>Refresh Interval</label>
