@@ -5,23 +5,25 @@
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
 	<thing-type id="nightscout">
-		<label>Nightscout Binding Thing</label>
-		<description>Sample thing for Nightscout Binding</description>
+		<label>Nightscout Instance</label>
+		<description>A Nightscout API endpoint</description>
 
 		<channels>
-			<channel id="channel1" typeId="sample-channel"/>
+			<channel id="glucose" typeId="glucose-channel"/>
+			<channel id="trend-arrow" typeId="trend-arrow-channel"/>
+			<channel id="last-sensor-value" typeId="last-sensor-value-channel"/>
 		</channels>
 
 		<config-description>
-			<parameter name="hostname" type="text" required="true">
-				<context>network-address</context>
-				<label>Hostname</label>
-				<description>Hostname or IP address of the Nightscout instance</description>
+			<parameter name="url" type="text" required="true">
+				<context>url</context>
+				<label>Nightscout Base URL</label>
+				<description>Base URL of the Nightscout instance. E.g. http://localhost</description>
 			</parameter>
-			<parameter name="accessToken" type="text" required="true">
+			<parameter name="apiSecret" type="text" required="true">
 				<context>password</context>
-				<label>Access Token</label>
-				<description>The access token to access the Nightscout instance</description>
+				<label>API Secret</label>
+				<description>The API secret of the Nightscout instance, configured in the server configuration variable API_SECRET.</description>
 			</parameter>
 			<parameter name="refreshInterval" type="integer" unit="s" min="1">
 				<label>Refresh Interval</label>
@@ -32,10 +34,21 @@
 		</config-description>
 	</thing-type>
 
-	<!-- Sample Channel Type -->
-	<channel-type id="sample-channel">
-		<item-type>Number:Temperature</item-type>
-		<label>Example Temperature</label><!-- Use uppercase words, except prepositions. 2-3 words, max 25 chars -->
-		<description>Sample channel for Nightscout Binding</description>
+	<channel-type id="glucose-channel">
+		<item-type>Number</item-type>
+		<label>Blood Glucose</label>
+		<description>The unfiltered blood glucose as received from the sensor.</description>
+	</channel-type>
+
+	<channel-type id="trend-arrow-channel">
+		<item-type>String</item-type>
+		<label>Trend Arrow</label>
+		<description>Arrow indicating the direction of blood glucose change.</description>
+	</channel-type>
+
+	<channel-type id="last-sensor-value-channel">
+		<item-type>DateTime</item-type>
+		<label>Last Sensor Update</label>
+		<description>Date of the reception of the last value from the sensor.</description>
 	</channel-type>
 </thing:thing-descriptions>

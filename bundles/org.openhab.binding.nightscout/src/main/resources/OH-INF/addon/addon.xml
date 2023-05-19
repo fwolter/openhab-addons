@@ -6,6 +6,6 @@
 	<type>binding</type>
 	<name>Nightscout Binding</name>
 	<description>This is the binding for Nightscout. Allowing real time access to continuous blood glucose measurements.</description>
-	<connection>hybrid</connection>
+	<!-- <connection>hybrid</connection> -->
 
 </addon:addon>
